@@ -437,8 +437,12 @@ type Backend struct {
 	Port      string
 	Endpoints []*Endpoint
 	EpNaming  EndpointNaming
-	Paths     []*BackendPath
-	PathsMap  *HostsMap
+	//
+	// Paths
+	//
+	Paths      []*BackendPath
+	PathsMap   *HostsMap
+	pathConfig map[string]*BackendPathConfig
 	//
 	// per backend config
 	//
@@ -513,10 +517,35 @@ type BackendPaths struct {
 	Items []*BackendPath
 }
 
+// BackendPathConfig ...
+type BackendPathConfig struct {
+	items []*BackendPathItem
+}
+
+// BackendPathItem ...
+type BackendPathItem struct {
+	paths  []*BackendPath
+	config interface{}
+}
+
 // BackendPath ...
 type BackendPath struct {
+	//
+	// core fields, filter out new fields in `Backend.createPathConfig()`
+	//
 	ID   string
 	Link PathLink
+	//
+	// config fields
+	//
+	AuthHTTP      AuthHTTP
+	Cors          Cors
+	HSTS          HSTS
+	MaxBodySize   int
+	RewriteURL    string
+	SSLRedirect   bool
+	WAF           WAF
+	WhitelistHTTP []string
 }
 
 // BackendHeader ...
@@ -664,6 +693,12 @@ type Cookie struct {
 	Shared   bool
 	Strategy string
 	Keywords string
+}
+
+// AuthHTTP ...
+type AuthHTTP struct {
+	UserlistName string
+	Realm        string
 }
 
 // Cors ...

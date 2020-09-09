@@ -18,6 +18,7 @@ package types
 
 import (
 	"fmt"
+	"reflect"
 	"sort"
 	"strings"
 )
@@ -232,11 +233,95 @@ func (b *Backend) HasSSLRedirectPaths(paths *BackendPaths) bool {
 	return false
 }
 
+// PathConfig ...
+func (b *Backend) PathConfig(attr string) *BackendPathConfig {
+	b.ensurePathConfig(attr)
+	return b.pathConfig[attr]
+}
+
 // NeedACL ...
 func (b *Backend) NeedACL() bool {
 	return len(b.HSTS) > 1 ||
 		len(b.MaxBodySize) > 1 || len(b.RewriteURL) > 1 || len(b.WhitelistHTTP) > 1 ||
 		len(b.Cors) > 1 || len(b.AuthHTTP) > 1 || len(b.WAF) > 1
+}
+
+func (b *Backend) ensurePathConfig(attr string) {
+	if b.pathConfig == nil {
+		b.pathConfig = b.createPathConfig()
+	}
+	if attr == "" {
+		return
+	}
+	if _, found := b.pathConfig[attr]; !found {
+		panic(fmt.Errorf("field does not exist: %s", attr))
+	}
+}
+
+func (b *Backend) createPathConfig() map[string]*BackendPathConfig {
+	pathconfig := make(map[string]*BackendPathConfig)
+	for _, path := range b.Paths {
+		pathValue := reflect.ValueOf(*path)
+		pathType := pathValue.Type()
+		for i := 0; i < pathType.NumField(); i++ {
+			field := pathType.Field(i)
+			name := field.Name
+			// filter out core fields
+			if name == "ID" || name == "Link" {
+				continue
+			}
+			config, found := pathconfig[name]
+			if !found {
+				config = &BackendPathConfig{}
+				pathconfig[name] = config
+			}
+			newconfig := pathValue.Field(i).Interface()
+			hasconfig := false
+			for _, item := range config.items {
+				if reflect.DeepEqual(item.config, newconfig) {
+					item.paths = append(item.paths, path)
+					hasconfig = true
+					break
+				}
+			}
+			if !hasconfig {
+				config.items = append(config.items, &BackendPathItem{
+					paths:  []*BackendPath{path},
+					config: newconfig,
+				})
+			}
+		}
+	}
+	return pathconfig
+}
+
+// NeedACL ...
+func (b *BackendPathConfig) NeedACL() bool {
+	return len(b.items) > 1
+}
+
+// Items ...
+func (b *BackendPathConfig) Items() []interface{} {
+	items := make([]interface{}, len(b.items))
+	for i, item := range b.items {
+		items[i] = item.config
+	}
+	return items
+}
+
+// Paths ...
+func (b *BackendPathConfig) Paths(index int) []*BackendPath {
+	return b.items[index].paths
+}
+
+// PathIDs ...
+func (b *BackendPathConfig) PathIDs(index int) string {
+	paths := b.items[index].paths
+	ids := make([]string, len(paths))
+	for i, path := range paths {
+		ids[i] = path.ID
+	}
+	return strings.Join(ids, " ")
 }
 
 // IsEmpty ...
