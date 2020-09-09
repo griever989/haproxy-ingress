@@ -17,6 +17,7 @@ limitations under the License.
 package types
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -51,22 +52,40 @@ func (b *Backend) FindEndpoint(target string) *Endpoint {
 }
 
 // AcquireEndpoint ...
-func (b *Backend) AcquireEndpoint(ip string, port int, targetRef string) *Endpoint {
+func (b *Backend) AcquireEndpoint(ip string, port int, targetRef string) (ep *Endpoint, err error) {
 	endpoint := b.FindEndpoint(fmt.Sprintf("%s:%d", ip, port))
 	if endpoint != nil {
-		return endpoint
+		return endpoint, nil
 	}
-	return b.addEndpoint(ip, port, targetRef)
+	pod, err := b.loader.GetPod(targetRef)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("Cannot acquire endpoint for %s:%d (%s) because it doesn't exist yet and the pod was unable to be loaded: %v", ip, port, targetRef, err))
+	}
+	cookieValue := fmt.Sprintf("%v", pod.UID)
+	endpoint, err = b.AddEndpoint(ip, port, targetRef, cookieValue)
+	if err != nil {
+		return nil, err
+	}
+	return endpoint, nil
+}
+
+// AddEndpoint ...
+func (b *Backend) AddEndpoint(ip string, port int, targetRef string, cookieValue string) (ep *Endpoint, err error) {
+	endpoint := b.FindEndpoint(fmt.Sprintf("%s:%d", ip, port))
+	if endpoint != nil {
+		return nil, errors.New(fmt.Sprintf("Cannot add endpoint because endpoint for %s:%d (%s) already exists", ip, port, targetRef))
+	}
+	return b.addEndpoint(ip, port, targetRef, cookieValue), nil
 }
 
 // AddEmptyEndpoint ...
 func (b *Backend) AddEmptyEndpoint() *Endpoint {
-	endpoint := b.addEndpoint("127.0.0.1", 1023, "")
+	endpoint := b.addEndpoint("127.0.0.1", 1023, "", "")
 	endpoint.Enabled = false
 	return endpoint
 }
 
-func (b *Backend) addEndpoint(ip string, port int, targetRef string) *Endpoint {
+func (b *Backend) addEndpoint(ip string, port int, targetRef string, cookieValue string) *Endpoint {
 	var name string
 	switch b.EpNaming {
 	case EpTargetRef:
@@ -81,13 +100,14 @@ func (b *Backend) addEndpoint(ip string, port int, targetRef string) *Endpoint {
 		name = fmt.Sprintf("srv%03d", len(b.Endpoints)+1)
 	}
 	endpoint := &Endpoint{
-		Name:      name,
-		IP:        ip,
-		Port:      port,
-		Target:    fmt.Sprintf("%s:%d", ip, port),
-		Enabled:   true,
-		TargetRef: targetRef,
-		Weight:    b.Server.InitialWeight,
+		Name:        name,
+		IP:          ip,
+		Port:        port,
+		Target:      fmt.Sprintf("%s:%d", ip, port),
+		Enabled:     true,
+		TargetRef:   targetRef,
+		Weight:      b.Server.InitialWeight,
+		CookieValue: cookieValue,
 	}
 	b.Endpoints = append(b.Endpoints, endpoint)
 	return endpoint

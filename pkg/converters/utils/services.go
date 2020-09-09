@@ -68,9 +68,10 @@ func FindContainerPort(pod *api.Pod, svcPort *api.ServicePort) int {
 
 // Endpoint ...
 type Endpoint struct {
-	IP        string
-	Port      int
-	TargetRef string
+	IP          string
+	Port        int
+	TargetRef   string
+	CookieValue string
 }
 
 // CreateEndpoints ...
@@ -136,9 +137,10 @@ func createEndpointsExternalName(svc *api.Service, svcPort *api.ServicePort) (en
 
 func newEndpointAddr(addr *api.EndpointAddress, port int) *Endpoint {
 	return &Endpoint{
-		IP:        addr.IP,
-		Port:      port,
-		TargetRef: targetRefToString(addr.TargetRef),
+		IP:          addr.IP,
+		Port:        port,
+		TargetRef:   targetRefToString(addr.TargetRef),
+		CookieValue: targetRefToUuidString(addr.TargetRef),
 	}
 }
 
@@ -147,6 +149,13 @@ func targetRefToString(targetRef *api.ObjectReference) string {
 		return ""
 	}
 	return fmt.Sprintf("%s/%s", targetRef.Namespace, targetRef.Name)
+}
+
+func targetRefToUuidString(targetRef *api.ObjectReference) string {
+	if targetRef == nil {
+		return ""
+	}
+	return fmt.Sprintf("%s", targetRef.UID)
 }
 
 func newEndpointIP(ip string, port int) *Endpoint {

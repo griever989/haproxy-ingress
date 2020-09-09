@@ -53,7 +53,7 @@ type InstanceOptions struct {
 type Instance interface {
 	AcmeCheck(source string) (int, error)
 	ParseTemplates() error
-	Config() Config
+	Config(loader hatypes.Loader) Config
 	CalcIdleMetric()
 	Update(timer *utils.Timer)
 }
@@ -164,13 +164,13 @@ func (i *instance) ParseTemplates() error {
 	return err
 }
 
-func (i *instance) Config() Config {
+func (i *instance) Config(loader hatypes.Loader) Config {
 	if i.config == nil {
 		config := createConfig(options{
 			mapsTemplate: i.mapsTmpl,
 			mapsDir:      i.options.HAProxyMapsDir,
 			shardCount:   i.options.BackendShards,
-		})
+		}, loader)
 		i.config = config
 	}
 	return i.config

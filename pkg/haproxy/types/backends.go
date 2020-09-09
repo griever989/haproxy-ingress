@@ -23,7 +23,7 @@ import (
 )
 
 // CreateBackends ...
-func CreateBackends(shardCount int) *Backends {
+func CreateBackends(shardCount int, loader Loader) *Backends {
 	shards := make([]map[string]*Backend, shardCount)
 	for i := range shards {
 		shards[i] = map[string]*Backend{}
@@ -34,6 +34,7 @@ func CreateBackends(shardCount int) *Backends {
 		itemsDel:      map[string]*Backend{},
 		shards:        shards,
 		changedShards: map[int]bool{},
+		loader:        loader,
 	}
 }
 
@@ -186,7 +187,7 @@ func (b *Backends) AcquireBackend(namespace, name, port string) *Backend {
 		return backend
 	}
 	shardCount := len(b.shards)
-	backend := createBackend(shardCount, namespace, name, port)
+	backend := createBackend(shardCount, namespace, name, port, b.loader)
 	b.items[backend.ID] = backend
 	b.itemsAdd[backend.ID] = backend
 	if shardCount > 0 {
@@ -245,7 +246,7 @@ func (b BackendID) String() string {
 	return b.id
 }
 
-func createBackend(shards int, namespace, name, port string) *Backend {
+func createBackend(shards int, namespace, name, port string, loader Loader) *Backend {
 	id := buildID(namespace, name, port)
 	var shard int
 	if shards > 0 {
@@ -275,6 +276,7 @@ func createBackend(shards int, namespace, name, port string) *Backend {
 		Name:      name,
 		Port:      port,
 		Server:    ServerConfig{InitialWeight: 1},
+		loader:    loader,
 	}
 }
 

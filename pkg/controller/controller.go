@@ -316,7 +316,7 @@ func (hc *HAProxyController) syncIngress(item interface{}) {
 	timer := utils.NewTimer(hc.metrics.ControllerProcTime)
 	ingConverter := ingressconverter.NewIngressConverter(
 		hc.converterOptions,
-		hc.instance.Config(),
+		hc.instance.Config(hc.cache),
 	)
 	ingConverter.Sync()
 	timer.Tick("parse_ingress")
@@ -330,7 +330,7 @@ func (hc *HAProxyController) syncIngress(item interface{}) {
 		if err == nil && tcpConfigmap != nil {
 			tcpSvcConverter := configmapconverter.NewTCPServicesConverter(
 				hc.logger,
-				hc.instance.Config(),
+				hc.instance.Config(hc.cache),
 				hc.cache,
 			)
 			tcpSvcConverter.Sync(tcpConfigmap.Data)

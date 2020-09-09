@@ -20,12 +20,13 @@ import (
 	"strings"
 
 	api "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 )
 
 // CreateService ...
-func CreateService(name, port, endpoints string) (*api.Service, *api.Endpoints) {
+func CreateService(name, port, endpoints string) (*api.Service, *api.Endpoints, []api.Pod) {
 	sname := strings.Split(name, "/") // namespace/name of the service
 	sport := strings.Split(port, ":") // numeric-port -or- name:numeric-port -or- name:numeric-port:named-port
 	if len(sport) < 2 {
@@ -60,19 +61,29 @@ subsets:
     protocol: TCP`).(*api.Endpoints)
 
 	addr := []api.EndpointAddress{}
+	pods := []api.Pod{}
 	for _, e := range strings.Split(endpoints, ",") {
 		if e != "" {
+			namespace := sname[0]
+			podname := sname[1] + "-xxxxx"
 			target := &api.ObjectReference{
 				Kind:      "Pod",
-				Name:      sname[1] + "-xxxxx",
-				Namespace: sname[0],
+				Name:      podname,
+				Namespace: namespace,
 			}
 			addr = append(addr, api.EndpointAddress{IP: e, TargetRef: target})
+			pods = append(pods, api.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      podname,
+					Namespace: namespace,
+					Labels:    map[string]string{},
+				},
+			})
 		}
 	}
 	ep.Subsets[0].Addresses = addr
 
-	return svc, ep
+	return svc, ep, pods
 }
 
 // CreateObject ...

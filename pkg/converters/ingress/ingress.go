@@ -584,7 +584,10 @@ func (c *converter) addBackend(source *annotations.Source, hostname, uri, fullSv
 		}
 		if mapper.Get(ingtypes.BackServiceUpstream).Bool() {
 			if addr, err := convutils.CreateSvcEndpoint(svc, port); err == nil {
-				backend.AcquireEndpoint(addr.IP, addr.Port, addr.TargetRef)
+				_, err := backend.AcquireEndpoint(addr.IP, addr.Port, addr.TargetRef)
+				if err != nil {
+					return nil, err
+				}
 			} else {
 				c.logger.Error("error adding IP of service '%s': %v", fullSvcName, err)
 			}
@@ -618,21 +621,30 @@ func (c *converter) addEndpoints(svc *api.Service, svcPort *api.ServicePort, bac
 		return err
 	}
 	for _, addr := range ready {
-		backend.AcquireEndpoint(addr.IP, addr.Port, addr.TargetRef)
+		_, err := backend.AcquireEndpoint(addr.IP, addr.Port, addr.TargetRef)
+		if err != nil {
+			return err
+		}
 	}
 	if c.globalConfig.Get(ingtypes.GlobalDrainSupport).Bool() {
 		for _, addr := range notReady {
-			ep := backend.AcquireEndpoint(addr.IP, addr.Port, addr.TargetRef)
+			ep, err := backend.AcquireEndpoint(addr.IP, addr.Port, addr.TargetRef)
+			if err != nil {
+				return err
+			}
 			ep.Weight = 0
 		}
-		pods, err := c.cache.GetTerminatingPods(svc, convtypes.TrackingTarget{Backend: backend.BackendID()})
+		terminatingPods, err := c.cache.GetTerminatingPods(svc, convtypes.TrackingTarget{Backend: backend.BackendID()})
 		if err != nil {
 			return fmt.Errorf("cannot fetch terminating pods on drain-support mode: %v", err)
 		}
-		for _, pod := range pods {
+		for _, pod := range terminatingPods {
 			targetPort := convutils.FindContainerPort(pod, svcPort)
 			if targetPort > 0 {
-				ep := backend.AcquireEndpoint(pod.Status.PodIP, targetPort, pod.Namespace+"/"+pod.Name)
+				ep, err := backend.AcquireEndpoint(pod.Status.PodIP, targetPort, pod.Namespace+"/"+pod.Name)
+				if err != nil {
+					return err
+				}
 				ep.Weight = 0
 			} else {
 				c.logger.Warn("skipping endpoint %s of service %s/%s: port '%s' was not found",

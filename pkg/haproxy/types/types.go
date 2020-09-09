@@ -18,6 +18,8 @@ package types
 
 import (
 	"time"
+
+	api "k8s.io/api/core/v1"
 )
 
 // AcmeData ...
@@ -413,6 +415,7 @@ type Backends struct {
 	defaultBackend *Backend
 	shards         []map[string]*Backend
 	changedShards  map[int]bool
+	loader         Loader
 }
 
 // BackendID ...
@@ -421,6 +424,10 @@ type BackendID struct {
 	Namespace string
 	Name      string
 	Port      string
+}
+
+type Loader interface {
+	GetPod(podName string) (*api.Pod, error)
 }
 
 // Backend ...
@@ -488,18 +495,23 @@ type Backend struct {
 	SSLRedirect   []*BackendConfigBool
 	WAF           []*BackendConfigWAF
 	WhitelistHTTP []*BackendConfigWhitelist
+	//
+	// misc
+	//
+	loader Loader
 }
 
 // Endpoint ...
 type Endpoint struct {
-	Enabled   bool
-	Label     string
-	IP        string
-	Name      string
-	Port      int
-	Target    string
-	TargetRef string
-	Weight    int
+	Enabled     bool
+	Label       string
+	IP          string
+	Name        string
+	Port        int
+	Target      string
+	TargetRef   string
+	Weight      int
+	CookieValue string
 }
 
 // BlueGreenConfig ...
