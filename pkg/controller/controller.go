@@ -111,7 +111,7 @@ func (hc *HAProxyController) configController() {
 		hc.cfg.ResyncPeriod,
 		hc.cfg.WaitBeforeUpdate,
 	)
-	resolver, err := createResolver(hc.cfg.ResolverPluginPath)
+	resolver, err := resolver.createResolver(hc.cfg.ResolverPluginPath)
 	if err != nil {
 		panic(fmt.Errorf(
 			"unable to load resolver plugin at '%s' (if path is empty, then we failed to load the empty resolver)",
@@ -325,7 +325,7 @@ func (hc *HAProxyController) syncIngress(item interface{}) {
 	timer := utils.NewTimer(hc.metrics.ControllerProcTime)
 	ingConverter := ingressconverter.NewIngressConverter(
 		hc.converterOptions,
-		hc.instance.Config(hc.cache),
+		hc.instance.Config(hc.resolver),
 	)
 	ingConverter.Sync()
 	timer.Tick("parse_ingress")
@@ -339,7 +339,7 @@ func (hc *HAProxyController) syncIngress(item interface{}) {
 		if err == nil && tcpConfigmap != nil {
 			tcpSvcConverter := configmapconverter.NewTCPServicesConverter(
 				hc.logger,
-				hc.instance.Config(hc.cache),
+				hc.instance.Config(hc.resolver),
 				hc.cache,
 			)
 			tcpSvcConverter.Sync(tcpConfigmap.Data)
