@@ -111,7 +111,7 @@ func (hc *HAProxyController) configController() {
 		hc.cfg.ResyncPeriod,
 		hc.cfg.WaitBeforeUpdate,
 	)
-	resolver, err := resolver.createResolver(hc.cfg.ResolverPluginPath)
+	resolver, err := resolver.CreateResolver(hc.cfg.ResolverPluginPath)
 	if err != nil {
 		panic(fmt.Errorf(
 			"unable to load resolver plugin at '%s' (if path is empty, then we failed to load the empty resolver)",

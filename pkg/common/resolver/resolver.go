@@ -36,7 +36,7 @@ type ResolverPlugin struct {
 // package for more informaton.
 // If the path is empty, just returns a default resolver that returns false for
 // all "CanResolve" functions.
-func createResolver(path string) (*ResolverPlugin, error) {
+func CreateResolver(path string) (*ResolverPlugin, error) {
 	resolver := &ResolverPlugin{}
 	if path == "" {
 		return resolver, nil

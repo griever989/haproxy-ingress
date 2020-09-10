@@ -25,7 +25,7 @@ import (
 // We should always be able to create an empty resolver that just returns false
 // for everything for ease of use
 func TestCreateEmptyResolver(t *testing.T) {
-	resolver, err := createResolver("")
+	resolver, err := CreateResolver("")
 	if err != nil {
 		t.Fatalf("Failed to load empty resolver")
 	}
@@ -46,7 +46,7 @@ func TestLoadAndCallResolverPlugin(t *testing.T) {
 
 	// it's expected that this plugin is precompiled before running this test
 	filepath := path.Join(path.Dir(filename), "resolver_test_plugin.so")
-	resolver, err := createResolver(filepath)
+	resolver, err := CreateResolver(filepath)
 	if err != nil {
 		t.Fatalf("Failed to load resolver at path '%s'", filepath)
 	}
