@@ -9,3 +9,4 @@ rootfs/haproxy-ingress-controller
 *.ipr
 *.iws
 *.iml
+*.so
