@@ -20,6 +20,6 @@ import (
 	"fmt"
 )
 
-func (r *ResolverPlugin) ResolveEndpointCookieValue(ip string, port int, targetRef string) (string, error) {
+func ResolveEndpointCookieValue(ip string, port int, targetRef string) string {
 	return fmt.Sprintf("%s_%v_cook", ip, port)
 }

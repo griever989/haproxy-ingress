@@ -34,6 +34,7 @@ The following command-line options are supported:
 | [`--publish-service`](#publish-service)                 | namespace/servicename      |                         |       |
 | [`--rate-limit-update`](#rate-limit-update)             | uploads per second (float) | `0.5`                   |       |
 | [`--reload-strategy`](#reload-strategy)                 | [native\|reusesocket]      | `reusesocket`           |       |
+| [`--resolver-plugin-path`](#resolver-plugin-path)       | /path/to/file.so           | `""`                    | v0.11 |
 | [`--sort-backends`](#sort-backends)                     | [true\|false]              | `false`                 |       |
 | [`--stats-collect-processing-period`](#stats)           | time                       | `500ms`                 | v0.10 |
 | [`--tcp-services-configmap`](#tcp-services-configmap)   | namespace/configmapname    | no tcp svc              |       |
@@ -208,6 +209,26 @@ describes how it works.
 
 ---
 
+## --resolver-plugin-path
+
+The `--resolver-plugin-path` command-line argument is used to specify the path to a file while will be
+loaded as a "resolver" which will be used by the controller at runtime to run code that you specify
+to resolve certain values.
+
+To provide the plugin to haproxy-ingress, you need to compile a `.go` file with `go build -buildmode=plugin`
+(further info at [go Plugin documentation](https://golang.org/pkg/plugin/)) and then place it somewhere on
+the filesystem that the controller can access it (such as via a ConfigMap), and provide the path to that
+file via this command-line argument. Your plugin can provide the following supported functions:
+
+* `func ResolveEndpointCookieValue(ip string, port int, targetRef string) string { ... }`: (starting on v0.11) Allows you to provide a custom implementation for how a cookie value on an endpoint is calculated in the haproxy.cfg file.
+eg. The value you return from this function will go here `server svr001 1.2.3.4:80 cookie {CookieValue}`
+in `{CookieValue}`, and the arguments passed in this example would look like `("1.2.3.4", 80, "default/webserver-abcde")`.
+This only makes sense to use when using the `affinity` annotation set with a value of `cookie`.
+
+Any functions that are not provided will be ignored; you don't need to specify all of them.
+
+--
+
 ## --sort-backends
 
 Ingress will randomly shuffle backends and server endpoints on each reload in order to avoid
@@ -275,7 +296,7 @@ HAProxy will listen 7 new ports:
 * `8000` will proxy to `http` service, port `8000`, on the `system-prod` namespace. The upstream service will expect connections using the PROXY protocol but it only supports v1.
 * `9900` will proxy to `admin` service, port `9900`, on the `system-prod` namespace. Clients should connect using the PROXY protocol v1 or v2. Upcoming connections should be encrypted, HAProxy will ssl-offload data using crt/key provided by `system-prod/tcp-9900` secret.
 * `9990` and `9999` will proxy to the same `admin` service and `9999` port and the upstream service will expect connections using the PROXY protocol v2. The HAProxy frontend, however, will only expect PROXY protocol v1 or v2 on it's port `9999`.
-* `9995` will proxy to `admin` service, port `9900`, on the `system-prod` namespace. Upcoming connections should be encrypted, HAProxy will ssl-offload data using crt/key provided by `system-prod/tcp-9995` secret. Furthermore, clients must present a certificate that will be valid under the certificate authority (and optional certificate revocation list) provded in the `system-prod/tcp-9995-ca` secret. 
+* `9995` will proxy to `admin` service, port `9900`, on the `system-prod` namespace. Upcoming connections should be encrypted, HAProxy will ssl-offload data using crt/key provided by `system-prod/tcp-9995` secret. Furthermore, clients must present a certificate that will be valid under the certificate authority (and optional certificate revocation list) provded in the `system-prod/tcp-9995-ca` secret.
 
 Note: Check interval was added in v0.10 and defaults to `2s`. All declared services has check interval enabled, except `3306` which disabled it.
 

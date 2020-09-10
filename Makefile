@@ -10,6 +10,8 @@ GOOS=linux
 GOARCH?=amd64
 GIT_REPO=$(shell git config --get remote.origin.url)
 ROOT_PKG=github.com/jcmoraisjr/haproxy-ingress/pkg
+PLUGIN_TESTFILE=$(ROOT_PKG)/common/resolver/resolver_test_plugin.go.testplugin
+COMPILED_PLUGIN_TESTFILE=resolver_test_plugin.so
 
 .PHONY: build
 build:
@@ -21,6 +23,9 @@ build:
 
 .PHONY: test
 test:
+	go build -buildmode=plugin \
+	  $(PLUGIN_TESTFILE)
+	  -o $(COMPILED_PLUGIN_TESTFILE)
 	## fix race and add -race param
 	go test -tags cgo $(ROOT_PKG)/...
 
