@@ -21,11 +21,9 @@ import (
 	"plugin"
 )
 
-type resolveCookieFunc func(string, int, string) string
-
 type ResolverPlugin struct {
 	canResolveCookie  bool
-	resolveCookieFunc resolveCookieFunc
+	resolveCookieFunc func(string, int, string) string
 }
 
 // Creates a ResolverPlugin which loads the following functions from
@@ -50,7 +48,7 @@ func CreateResolver(path string) (*ResolverPlugin, error) {
 	resolveCookieFuncLookup, lookupErr := p.Lookup("ResolveEndpointCookieValue")
 	if lookupErr == nil {
 		resolver.canResolveCookie = true
-		resolver.resolveCookieFunc = resolveCookieFuncLookup.(resolveCookieFunc)
+		resolver.resolveCookieFunc = resolveCookieFuncLookup.(func(string, int, string) string)
 	}
 
 	return resolver, nil
