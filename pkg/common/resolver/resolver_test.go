@@ -17,6 +17,8 @@ limitations under the License.
 package resolver
 
 import (
+	"os"
+	"path"
 	"testing"
 )
 
@@ -38,10 +40,14 @@ func TestCreateEmptyResolver(t *testing.T) {
 
 func TestLoadAndCallResolverPlugin(t *testing.T) {
 	// it's expected that this plugin is precompiled before running this test
-	filepath := "./pkg/common/resolver/testplugin/resolver_test_plugin.so"
+	cwd, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Unable to determine current directory that tests are being run from")
+	}
+	filepath := path.Join(cwd, "testplugin", "resolver_test_plugin.so")
 	resolver, err := CreateResolver(filepath)
 	if err != nil {
-		t.Fatalf("Failed to load resolver at path '%s'", filepath)
+		t.Fatalf("Failed to load resolver at path '%s' (are you running tests from the root directory?)", filepath)
 	}
 
 	testIp := "127.0.0.100"
