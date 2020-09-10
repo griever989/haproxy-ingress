@@ -179,8 +179,8 @@ func NewIngressController(backend ingress.Controller) *GenericController {
 			or different ingress.class annotation will not be considered. Default is false`)
 
 		resolverPluginPath = flags.String("resolver-plugin-path", "",
-			`Path to a .so file that contains definitions written in go which can be called at runtime to
-			add custom logic to different areas of the controller`)
+			`Path to a .so file built with 'go build -buildmode=plugin' that contains functions written in go
+			which can be called at runtime to add custom logic to different areas of the controller`)
 	)
 
 	flags.AddGoFlagSet(flag.CommandLine)

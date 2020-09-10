@@ -24,7 +24,7 @@ func createResolver(path string) *ResolverPlugin {
 	resolveCookieFuncLookup, err := p.Lookup("ResolveEndpointCookieValue")
 	if err == nil {
 		resolver.canResolveCookie = true
-		resolver.resolveCookieFunc = resolveCookieFuncLookup.(func(string, int, string) string)
+		resolver.resolveCookieFunc = resolveCookieFuncLookup.(resolveCookieFunc)
 	}
 
 	return resolver
