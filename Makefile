@@ -11,7 +11,7 @@ GOARCH?=amd64
 GIT_REPO=$(shell git config --get remote.origin.url)
 ROOT_PKG=github.com/jcmoraisjr/haproxy-ingress/pkg
 PLUGIN_TEST_PKG=$(ROOT_PKG)/common/resolver/testplugin
-COMPILED_PLUGIN_TEST=resolver_test_plugin.so
+COMPILED_PLUGIN_TEST=$(PLUGIN_TEST_PKG)/resolver_test_plugin.so
 
 .PHONY: build
 build:

@@ -17,8 +17,6 @@ limitations under the License.
 package resolver
 
 import (
-	"path"
-	"runtime"
 	"testing"
 )
 
@@ -39,13 +37,8 @@ func TestCreateEmptyResolver(t *testing.T) {
 }
 
 func TestLoadAndCallResolverPlugin(t *testing.T) {
-	_, filename, _, ok := runtime.Caller(1)
-	if !ok {
-		t.Fatalf("Unable to get caller of this test to calculate directory")
-	}
-
 	// it's expected that this plugin is precompiled before running this test
-	filepath := path.Join(path.Dir(filename), "resolver_test_plugin.so")
+	filepath := "./pkg/common/resolver/testplugin/resolver_test_plugin.so"
 	resolver, err := CreateResolver(filepath)
 	if err != nil {
 		t.Fatalf("Failed to load resolver at path '%s'", filepath)
