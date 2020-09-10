@@ -58,7 +58,7 @@ func (i *instance) newDynUpdater() *dynUpdater {
 }
 
 func (d *dynUpdater) update() bool {
-	updated := d.config.hasCommittedData() && d.checkConfigChange()
+	updated := d.canDynamicUpdate() && d.config.hasCommittedData() && d.checkConfigChange()
 	if !updated {
 		// Need to reload, time to adjust empty slots according to config
 		d.alignSlots()
@@ -119,6 +119,10 @@ func (d *dynUpdater) checkConfigChange() bool {
 	}
 
 	return updated
+}
+
+func (d *dynUpdater) canDynamicUpdate() bool {
+	return false // todo check cookie plugin loading settings and return false if enabled only
 }
 
 func (d *dynUpdater) checkBackendPair(pair *backendPair) bool {
