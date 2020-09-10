@@ -31,7 +31,7 @@ require (
 	github.com/zmb3/goaddimport v0.0.0-20170810013102-4ab94a07ab86 // indirect
 	github.com/zmb3/gogetdoc v0.0.0-20190228002656-b37376c5da6a // indirect
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
-	golang.org/x/tools v0.0.0-20200909171821-201d438bced1 // indirect
+	golang.org/x/tools v0.0.0-20200910143807-b484961fa2c7 // indirect
 	gopkg.in/alecthomas/kingpin.v3-unstable v3.0.0-20191105091915-95d230a53780 // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/go-playground/pool.v3 v3.1.1
