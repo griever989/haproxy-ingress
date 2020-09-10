@@ -49,7 +49,7 @@ type HAProxyController struct {
 	instance          haproxy.Instance
 	logger            *logger
 	cache             *k8scache
-	resolver          *ResolverPlugin
+	resolver          *resolver.ResolverPlugin
 	metrics           *metrics
 	tracker           convtypes.Tracker
 	stopCh            chan struct{}
