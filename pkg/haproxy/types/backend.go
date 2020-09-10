@@ -65,20 +65,8 @@ func (b *Backend) AcquireEndpoint(ip string, port int, targetRef string) (ep *En
 		}
 	}
 
-	ep, err = b.AddEndpoint(ip, port, targetRef, cookieValue)
-	if err != nil {
-		return nil, err
-	}
+	ep = b.addEndpoint(ip, port, targetRef, cookieValue)
 	return ep, nil
-}
-
-// AddEndpoint ...
-func (b *Backend) AddEndpoint(ip string, port int, targetRef string, cookieValue string) (ep *Endpoint, err error) {
-	ep = b.FindEndpoint(fmt.Sprintf("%s:%d", ip, port))
-	if ep != nil {
-		return nil, errors.New(fmt.Sprintf("Cannot add endpoint because endpoint for %s:%d (%s) already exists", ip, port, targetRef))
-	}
-	return b.addEndpoint(ip, port, targetRef, cookieValue), nil
 }
 
 // AddEmptyEndpoint ...
