@@ -1,6 +1,7 @@
 package resolver
 
 import (
+	"errors"
 	"plugin"
 )
 
@@ -11,7 +12,12 @@ type ResolverPlugin struct {
 	resolveCookieFunc resolveCookieFunc
 }
 
-// SHA1 returns the SHA1 of a file.
+// Creates a ResolverPlugin which loads the following functions from
+// the file at the path specified:
+//     ResolveEndpointCookieValue(ip string, port int, targetRef string) string
+// Any functions not defined will not be loaded; not all of them need to be defined.
+// The file must be compiled with `go build -buildmode=plugin`. See the "plugin"
+// package for more informaton.
 func createResolver(path string) *ResolverPlugin {
 	resolver := &ResolverPlugin{}
 	if path == "" {
@@ -35,5 +41,8 @@ func (r *ResolverPlugin) CanResolveCookie() bool {
 }
 
 func (r *ResolverPlugin) ResolveEndpointCookieValue(ip string, port int, targetRef string) (string, error) {
+	if !r.CanResolveCookie() {
+		return "", errors.New("Cookie resolver function is not registered")
+	}
 	return r.resolveCookieFunc(ip, port, targetRef), nil
 }
