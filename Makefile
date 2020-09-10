@@ -24,7 +24,7 @@ build:
 .PHONY: test
 test:
 	go build -buildmode=plugin \
-	  $(PLUGIN_TEST_PKG)
+	  $(PLUGIN_TEST_PKG) \
 	  -o $(COMPILED_PLUGIN_TEST)
 	## fix race and add -race param
 	go test -tags cgo $(ROOT_PKG)/...
