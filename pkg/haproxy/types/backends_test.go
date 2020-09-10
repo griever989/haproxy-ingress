@@ -98,7 +98,7 @@ func TestBackendCrud(t *testing.T) {
 	}
 	for i, test := range testCases {
 		c := setup(t)
-		backends := CreateBackends(test.shardCnt)
+		backends := CreateBackends(test.shardCnt, nil)
 		for _, add := range test.add {
 			p := strings.Split(add, "_")
 			backends.AcquireBackend(p[0], p[1], p[2])
@@ -171,7 +171,7 @@ func TestShrinkBackends(t *testing.T) {
 	}
 	for i, test := range testCases {
 		c := setup(t)
-		b := CreateBackends(0)
+		b := CreateBackends(0, nil)
 		for _, add := range test.add {
 			b.itemsAdd[add.Name] = add
 		}

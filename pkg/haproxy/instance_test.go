@@ -29,7 +29,6 @@ import (
 	yaml "gopkg.in/yaml.v2"
 
 	conv_helper "github.com/jcmoraisjr/haproxy-ingress/pkg/converters/helper_test"
-	"github.com/jcmoraisjr/haproxy-ingress/pkg/converters/ingress/tracker"
 	hatypes "github.com/jcmoraisjr/haproxy-ingress/pkg/haproxy/types"
 	"github.com/jcmoraisjr/haproxy-ingress/pkg/types/helper_test"
 	"github.com/jcmoraisjr/haproxy-ingress/pkg/utils"
@@ -3072,10 +3071,9 @@ func setupOptions(options testOptions) *testConfig {
 		t.Errorf("error parsing map.tmpl: %v", err)
 	}
 
-	tracker := tracker.NewTracker()
-	loader := conv_helper.NewCacheMock(tracker)
+	resolver := conv_helper.NewResolverMock()
 
-	config := instance.Config(loader).(*config)
+	config := instance.Config(resolver).(*config)
 	config.frontend.DefaultCrtFile = "/var/haproxy/ssl/certs/default.pem"
 	c := &testConfig{
 		t:        t,

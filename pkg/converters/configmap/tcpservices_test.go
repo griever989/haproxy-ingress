@@ -321,11 +321,12 @@ type testConfig struct {
 func setup(t *testing.T) *testConfig {
 	logger := types_helper.NewLoggerMock(t)
 	tracker := tracker.NewTracker()
+	resolver := conv_helper.NewResolverMock()
 	c := &testConfig{
 		t:       t,
 		logger:  logger,
 		cache:   conv_helper.NewCacheMock(tracker),
-		haproxy: haproxy.CreateInstance(logger, haproxy.InstanceOptions{}).Config(),
+		haproxy: haproxy.CreateInstance(logger, haproxy.InstanceOptions{}).Config(resolver),
 	}
 	return c
 }

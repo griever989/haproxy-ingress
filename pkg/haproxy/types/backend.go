@@ -53,26 +53,29 @@ func (b *Backend) FindEndpoint(target string) *Endpoint {
 
 // AcquireEndpoint ...
 func (b *Backend) AcquireEndpoint(ip string, port int, targetRef string) (ep *Endpoint, err error) {
-	endpoint := b.FindEndpoint(fmt.Sprintf("%s:%d", ip, port))
-	if endpoint != nil {
-		return endpoint, nil
+	ep = b.FindEndpoint(fmt.Sprintf("%s:%d", ip, port))
+	if ep != nil {
+		return ep, nil
 	}
-	pod, err := b.loader.GetPod(targetRef)
-	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Cannot acquire endpoint for %s:%d (%s) because it doesn't exist yet and the pod was unable to be loaded: %v", ip, port, targetRef, err))
+	cookieValue := ""
+	if b.resolver.CanResolveCookie() {
+		cookieValue, err = b.resolver.ResolveEndpointCookieValue(ip, port, targetRef)
+		if err != nil {
+			return nil, errors.New(fmt.Sprintf("Cannot acquire endpoint for %s:%d (%s) because it doesn't exist yet and the cookie failed to resolve: %v", ip, port, targetRef, err))
+		}
 	}
-	cookieValue := fmt.Sprintf("%v", pod.UID)
-	endpoint, err = b.AddEndpoint(ip, port, targetRef, cookieValue)
+
+	ep, err = b.AddEndpoint(ip, port, targetRef, cookieValue)
 	if err != nil {
 		return nil, err
 	}
-	return endpoint, nil
+	return ep, nil
 }
 
 // AddEndpoint ...
 func (b *Backend) AddEndpoint(ip string, port int, targetRef string, cookieValue string) (ep *Endpoint, err error) {
-	endpoint := b.FindEndpoint(fmt.Sprintf("%s:%d", ip, port))
-	if endpoint != nil {
+	ep = b.FindEndpoint(fmt.Sprintf("%s:%d", ip, port))
+	if ep != nil {
 		return nil, errors.New(fmt.Sprintf("Cannot add endpoint because endpoint for %s:%d (%s) already exists", ip, port, targetRef))
 	}
 	return b.addEndpoint(ip, port, targetRef, cookieValue), nil

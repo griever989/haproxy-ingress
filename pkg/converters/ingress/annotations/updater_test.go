@@ -52,9 +52,10 @@ type testConfig struct {
 func setup(t *testing.T) *testConfig {
 	logger := &types_helper.LoggerMock{T: t}
 	tracker := tracker.NewTracker()
+	resolver := conv_helper.NewResolverMock()
 	return &testConfig{
 		t:       t,
-		haproxy: haproxy.CreateInstance(logger, haproxy.InstanceOptions{}).Config(),
+		haproxy: haproxy.CreateInstance(logger, haproxy.InstanceOptions{}).Config(resolver),
 		cache:   conv_helper.NewCacheMock(tracker),
 		tracker: tracker,
 		logger:  logger,

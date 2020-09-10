@@ -18,8 +18,6 @@ package types
 
 import (
 	"time"
-
-	api "k8s.io/api/core/v1"
 )
 
 // AcmeData ...
@@ -415,7 +413,7 @@ type Backends struct {
 	defaultBackend *Backend
 	shards         []map[string]*Backend
 	changedShards  map[int]bool
-	loader         Loader
+	resolver       Resolver
 }
 
 // BackendID ...
@@ -426,8 +424,9 @@ type BackendID struct {
 	Port      string
 }
 
-type Loader interface {
-	GetPod(podName string) (*api.Pod, error)
+type Resolver interface {
+	CanResolveCookie() bool
+	ResolveEndpointCookieValue(ip string, port int, targetRef string) (string, error)
 }
 
 // Backend ...
@@ -498,7 +497,7 @@ type Backend struct {
 	//
 	// misc
 	//
-	loader Loader
+	resolver Resolver
 }
 
 // Endpoint ...

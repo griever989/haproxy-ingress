@@ -47,7 +47,7 @@ type Config interface {
 type config struct {
 	// external state, non haproxy data
 	options  options
-	loader   hatypes.Loader
+	resolver hatypes.Resolver
 	acmeData *hatypes.AcmeData
 	// haproxy internal state
 	globalOld   *hatypes.Global
@@ -66,7 +66,7 @@ type options struct {
 	shardCount   int
 }
 
-func createConfig(options options, loader hatypes.Loader) *config {
+func createConfig(options options, resolver hatypes.Resolver) *config {
 	options.matchOrder = []hatypes.MatchType{
 		hatypes.MatchExact,
 		hatypes.MatchPrefix,
@@ -78,12 +78,12 @@ func createConfig(options options, loader hatypes.Loader) *config {
 	}
 	return &config{
 		options:     options,
-		loader:      loader,
+		resolver:    resolver,
 		acmeData:    &hatypes.AcmeData{},
 		global:      &hatypes.Global{},
 		frontend:    &hatypes.Frontend{},
 		hosts:       hatypes.CreateHosts(),
-		backends:    hatypes.CreateBackends(options.shardCount, loader),
+		backends:    hatypes.CreateBackends(options.shardCount, resolver),
 		tcpbackends: hatypes.CreateTCPBackends(),
 		userlists:   hatypes.CreateUserlists(),
 	}
@@ -383,7 +383,7 @@ func (c *config) Userlists() *hatypes.Userlists {
 }
 
 func (c *config) Clear() {
-	config := createConfig(c.options, c.loader)
+	config := createConfig(c.options, c.resolver)
 	*c = *config
 }
 

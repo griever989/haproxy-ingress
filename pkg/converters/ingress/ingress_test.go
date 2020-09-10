@@ -1316,7 +1316,7 @@ WARN using default certificate due to an error reading secret 'default/tls1' on 
 		}
 		endp := func(slice *[]*api.Endpoints, params [][]string) {
 			for _, param := range params {
-				_, ep, _ := conv_helper.CreateService(param[0], param[1], param[2])
+				_, ep := conv_helper.CreateService(param[0], param[1], param[2])
 				*slice = append(*slice, ep)
 			}
 		}
@@ -1698,10 +1698,11 @@ func setup(t *testing.T) *testConfig {
 	logger := types_helper.NewLoggerMock(t)
 	tracker := tracker.NewTracker()
 	cache := conv_helper.NewCacheMock(tracker)
+	resolver := conv_helper.NewResolverMock()
 	c := &testConfig{
 		t:       t,
 		decode:  scheme.Codecs.UniversalDeserializer().Decode,
-		hconfig: haproxy.CreateInstance(logger, haproxy.InstanceOptions{}).Config(cache),
+		hconfig: haproxy.CreateInstance(logger, haproxy.InstanceOptions{}).Config(resolver),
 		cache:   cache,
 		logger:  logger,
 		tracker: tracker,
@@ -1773,7 +1774,7 @@ func (c *testConfig) createSvc1Ann(name, port, endpoints string, ann map[string]
 }
 
 func (c *testConfig) createSvc1(name, port, endpoints string) (*api.Service, *api.Endpoints) {
-	svc, ep, pods := conv_helper.CreateService(name, port, endpoints)
+	svc, ep := conv_helper.CreateService(name, port, endpoints)
 	// TODO change SvcList to map
 	var has bool
 	for i, svc1 := range c.cache.SvcList {
@@ -1787,9 +1788,6 @@ func (c *testConfig) createSvc1(name, port, endpoints string) (*api.Service, *ap
 		c.cache.SvcList = append(c.cache.SvcList, svc)
 	}
 	c.cache.EpList[name] = ep
-	for _, pod := range pods {
-		c.cache.DefinePod(pod.Namespace, pod.Name)
-	}
 	return svc, ep
 }
 

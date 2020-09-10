@@ -99,6 +99,8 @@ type Configuration struct {
 	BackendShards             int
 	SortBackends              bool
 	IgnoreIngressWithoutClass bool
+
+	ResolverPluginPath string
 }
 
 // newIngressController creates an Ingress controller

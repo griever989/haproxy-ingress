@@ -32,6 +32,7 @@ import (
 	"github.com/jcmoraisjr/haproxy-ingress/pkg/common/ingress"
 	"github.com/jcmoraisjr/haproxy-ingress/pkg/common/ingress/controller"
 	"github.com/jcmoraisjr/haproxy-ingress/pkg/common/net/ssl"
+	"github.com/jcmoraisjr/haproxy-ingress/pkg/common/resolver"
 	configmapconverter "github.com/jcmoraisjr/haproxy-ingress/pkg/converters/configmap"
 	ingressconverter "github.com/jcmoraisjr/haproxy-ingress/pkg/converters/ingress"
 	"github.com/jcmoraisjr/haproxy-ingress/pkg/converters/ingress/tracker"
@@ -48,6 +49,7 @@ type HAProxyController struct {
 	instance          haproxy.Instance
 	logger            *logger
 	cache             *k8scache
+	resolver          *ResolverPlugin
 	metrics           *metrics
 	tracker           convtypes.Tracker
 	stopCh            chan struct{}
@@ -109,6 +111,7 @@ func (hc *HAProxyController) configController() {
 		hc.cfg.ResyncPeriod,
 		hc.cfg.WaitBeforeUpdate,
 	)
+	hc.resolver = createResolver(hc.cfg.ResolverPluginPath)
 	var acmeSigner acme.Signer
 	if hc.cfg.AcmeServer {
 		electorID := fmt.Sprintf("%s-%s", hc.cfg.AcmeElectionID, hc.cfg.IngressClass)
