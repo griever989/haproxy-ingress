@@ -19,6 +19,8 @@ package resolver
 import (
 	"errors"
 	"plugin"
+
+	"github.com/golang/glog"
 )
 
 type ResolverPlugin struct {
@@ -47,8 +49,14 @@ func CreateResolver(path string) (*ResolverPlugin, error) {
 	// lookupErr here is not a failure, because the function isn't required to be defined
 	resolveCookieFuncLookup, lookupErr := p.Lookup("ResolveEndpointCookieValue")
 	if lookupErr == nil {
-		resolver.canResolveCookie = true
-		resolver.resolveCookieFunc = resolveCookieFuncLookup.(func(string, int, string) string)
+		castedFunc, ok := resolveCookieFuncLookup.(func(string, int, string) string)
+		if ok {
+			resolver.canResolveCookie = true
+			resolver.resolveCookieFunc = castedFunc
+		} else {
+			glog.Warningf("Resolved plugin function 'ResolveEndpointCookieValue', however it has the wrong signature: %T. "+
+				"The expected signature is: func(string, int, string) string", resolveCookieFuncLookup)
+		}
 	}
 
 	return resolver, nil
