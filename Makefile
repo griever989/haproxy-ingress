@@ -24,7 +24,7 @@ build:
 .PHONY: test
 test:
 	go build -buildmode=plugin \
-	  -ldflags "-s -w"
+	  -ldflags "-s -w" \
 	  -o $(COMPILED_PLUGIN_TEST_TARGET) \
 	  $(PLUGIN_TEST_PKG)
 	## fix race and add -race param
