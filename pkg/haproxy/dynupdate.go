@@ -58,7 +58,7 @@ func (i *instance) newDynUpdater() *dynUpdater {
 }
 
 func (d *dynUpdater) update() bool {
-	updated := d.canDynamicUpdate() && d.config.hasCommittedData() && d.checkConfigChange()
+	updated := d.config.hasCommittedData() && d.checkConfigChange()
 	if !updated {
 		// Need to reload, time to adjust empty slots according to config
 		d.alignSlots()
@@ -119,10 +119,6 @@ func (d *dynUpdater) checkConfigChange() bool {
 	}
 
 	return updated
-}
-
-func (d *dynUpdater) canDynamicUpdate() bool {
-	return false // todo check cookie plugin loading settings and return false if enabled only
 }
 
 func (d *dynUpdater) checkBackendPair(pair *backendPair) bool {
@@ -194,6 +190,7 @@ func (d *dynUpdater) checkBackendPair(pair *backendPair) bool {
 	// Try to dynamically remove/update/add endpoints.
 	// Targets being used here only to have predictable results (tests).
 	// Endpoint.Label != "" means use-server of blue/green config, need reload
+	// Endpoint.CookieValue != "" means this was being used for cookie affinity may need reload
 	sort.Strings(targets)
 	for _, target := range targets {
 		pair := endpoints[target]
@@ -203,7 +200,7 @@ func (d *dynUpdater) checkBackendPair(pair *backendPair) bool {
 			added = added[1:]
 		}
 		if pair.cur == nil {
-			if !d.execDisableEndpoint(curBack.ID, pair.old) || pair.old.Label != "" {
+			if !d.execDisableEndpoint(curBack.ID, pair.old) || pair.old.Label != "" || pair.old.CookieValue != "" {
 				updated = false
 			}
 			empty = append(empty, pair.old.Name)
@@ -233,7 +230,7 @@ func (d *dynUpdater) checkEndpointPair(backname string, pair *epPair) bool {
 		return true
 	}
 	updated := d.execEnableEndpoint(backname, pair.old, pair.cur)
-	if !updated || pair.old.Label != "" || pair.cur.Label != "" {
+	if !updated || pair.old.Label != "" || pair.cur.Label != "" || pair.old.CookieValue != pair.cur.CookieValue {
 		return false
 	}
 	return true

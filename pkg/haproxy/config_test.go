@@ -18,10 +18,13 @@ package haproxy
 
 import (
 	"testing"
+
+	conv_helper "github.com/jcmoraisjr/haproxy-ingress/pkg/converters/helper_test"
 )
 
 func TestEmptyFrontend(t *testing.T) {
-	c := createConfig(options{}, nil)
+	resolver := conv_helper.NewResolverMock()
+	c := createConfig(options{}, resolver)
 	if err := c.WriteFrontendMaps(); err != nil {
 		t.Errorf("error creating frontends: %v", err)
 	}
@@ -39,7 +42,8 @@ func TestEmptyFrontend(t *testing.T) {
 }
 
 func TestAcquireHostDiff(t *testing.T) {
-	c := createConfig(options{}, nil)
+	resolver := conv_helper.NewResolverMock()
+	c := createConfig(options{}, resolver)
 	f1 := c.hosts.AcquireHost("h1")
 	f2 := c.hosts.AcquireHost("h2")
 	if f1.Hostname != "h1" {
@@ -51,7 +55,8 @@ func TestAcquireHostDiff(t *testing.T) {
 }
 
 func TestAcquireHostSame(t *testing.T) {
-	c := createConfig(options{}, nil)
+	resolver := conv_helper.NewResolverMock()
+	c := createConfig(options{}, resolver)
 	f1 := c.hosts.AcquireHost("h1")
 	f2 := c.hosts.AcquireHost("h1")
 	if f1 != f2 {
@@ -60,9 +65,10 @@ func TestAcquireHostSame(t *testing.T) {
 }
 
 func TestClear(t *testing.T) {
+	resolver := conv_helper.NewResolverMock()
 	c := createConfig(options{
 		mapsDir: "/tmp/maps",
-	}, nil)
+	}, resolver)
 	c.Hosts().AcquireHost("app.local")
 	c.Backends().AcquireBackend("default", "app", "8080")
 	if c.options.mapsDir != "/tmp/maps" {
