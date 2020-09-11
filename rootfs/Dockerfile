@@ -13,7 +13,11 @@
 # limitations under the License.
 
 FROM haproxy:2.1.8-alpine
-RUN apk --no-cache add socat openssl lua5.3 lua-socket dumb-init
+RUN apk --no-cache add socat openssl lua5.3 lua-socket dumb-init go
+
+ENV GOROOT /usr/lib/go
+ENV GOPATH /go
+ENV PATH /go/bin:$PATH
 
 COPY . /
 

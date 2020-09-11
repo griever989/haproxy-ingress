@@ -34,7 +34,7 @@ The following command-line options are supported:
 | [`--publish-service`](#publish-service)                 | namespace/servicename      |                         |       |
 | [`--rate-limit-update`](#rate-limit-update)             | uploads per second (float) | `0.5`                   |       |
 | [`--reload-strategy`](#reload-strategy)                 | [native\|reusesocket]      | `reusesocket`           |       |
-| [`--resolver-plugin-path`](#resolver-plugin-path)       | /path/to/file.so           | `""`                    | v0.11 |
+| [`--resolver-plugin-file`](#resolver-plugin-file)       | filename without ".go"     | `""`                    | v0.11 |
 | [`--sort-backends`](#sort-backends)                     | [true\|false]              | `false`                 |       |
 | [`--stats-collect-processing-period`](#stats)           | time                       | `500ms`                 | v0.10 |
 | [`--tcp-services-configmap`](#tcp-services-configmap)   | namespace/configmapname    | no tcp svc              |       |
@@ -209,16 +209,18 @@ describes how it works.
 
 ---
 
-## --resolver-plugin-path
+## --resolver-plugin-file
 
-The `--resolver-plugin-path` command-line argument is used to specify the path to a file while will be
-loaded as a "resolver" which will be used by the controller at runtime to run code that you specify
+The `--resolver-plugin-file` command-line argument is used to specify the name of a file (without extension or path)
+which will be loaded as a "resolver" which will be used by the controller at runtime to run code that you specify
 to resolve certain values.
 
-To provide the plugin to haproxy-ingress, you need to compile a `.go` file with `go build -buildmode=plugin`
-(further info at [go Plugin documentation](https://golang.org/pkg/plugin/)) and then place it somewhere on
-the filesystem that the controller can access it (such as via a ConfigMap), and provide the path to that
-file via this command-line argument. Your plugin can provide the following supported functions:
+To provide the plugin to haproxy-ingress, you need to place a `.go` file at `/etc/plugin/{filename_here}.go` and run
+the controller with the command-line argument `--resolver-plugin-file=filename_here` (without extension or path).
+You can place the file at the etc/plugin/* location with a ConfigMap or a Volume as you see fit.
+The file will be compiled for you automatically with `go build -buildmode=plugin` (further info at
+[go Plugin documentation](https://golang.org/pkg/plugin/)).
+Your plugin can provide the following supported functions:
 
 * `func ResolveEndpointCookieValue(ip string, port int, targetRef string) string { ... }`: (starting on v0.11) Allows you to provide a custom implementation for how a cookie value on an endpoint is calculated in the haproxy.cfg file.
 eg. The value you return from this function will go here `server svr001 1.2.3.4:80 cookie {CookieValue}`

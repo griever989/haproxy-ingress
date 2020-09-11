@@ -22,5 +22,16 @@ if [ $# -gt 0 ] && [ "$(echo $1 | cut -b1-2)" != "--" ]; then
 else
     # Copy static files to /etc/haproxy, which cannot have static content
     cp -R -p /etc/lua /etc/haproxy/
+    
+    # Build plugins
+    if [ -d "/etc/plugins" ] 
+        for f in /etc/plugins/*.go; do
+            go build -buildmode=plugin \
+        	  -ldflags "-s -w" \
+              -o "/etc/plugins/" \
+        	  "/etc/plugins/$f"
+        done
+    fi
+    
     exec /haproxy-ingress-controller "$@"
 fi

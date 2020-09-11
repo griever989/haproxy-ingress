@@ -62,6 +62,14 @@ func CreateResolver(path string) (*ResolverPlugin, error) {
 	return resolver, nil
 }
 
+func GetPathToResolverPlugin(filename string) string {
+	// if no filename, then no plugin to load, so return empty
+	if filename == "" {
+		return ""
+	}
+	return "/etc/plugins/" + filename + ".so"
+}
+
 func (r *ResolverPlugin) CanResolveCookie() bool {
 	return r.canResolveCookie
 }

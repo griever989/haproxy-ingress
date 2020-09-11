@@ -178,7 +178,7 @@ func NewIngressController(backend ingress.Controller) *GenericController {
 			only the ingresses with the matching ingress.class annotation will be considered, ingresses with missing 
 			or different ingress.class annotation will not be considered. Default is false`)
 
-		resolverPluginPath = flags.String("resolver-plugin-path", "",
+		resolverPluginFile = flags.String("resolver-plugin-file", "",
 			`Path to a .so file built with 'go build -buildmode=plugin' that contains functions written in go
 			which can be called at runtime to add custom logic to different areas of the controller`)
 	)
@@ -334,7 +334,7 @@ func NewIngressController(backend ingress.Controller) *GenericController {
 		SortBackends:              *sortBackends,
 		UseNodeInternalIP:         *useNodeInternalIP,
 		IgnoreIngressWithoutClass: *ignoreIngressWithoutClass,
-		ResolverPluginPath:        *resolverPluginPath,
+		ResolverPluginFile:        *resolverPluginFile,
 	}
 
 	ic := newIngressController(config)
