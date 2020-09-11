@@ -586,7 +586,7 @@ func (c *converter) addBackend(source *annotations.Source, hostname, uri, fullSv
 			if addr, err := convutils.CreateSvcEndpoint(svc, port); err == nil {
 				_, err := backend.AcquireEndpoint(addr.IP, addr.Port, addr.TargetRef)
 				if err != nil {
-					return nil, err
+					c.logger.Error("error acquiring endpoint of service '%s': %v", fullSvcName, err)
 				}
 			} else {
 				c.logger.Error("error adding IP of service '%s': %v", fullSvcName, err)

@@ -174,8 +174,8 @@ func NewIngressController(backend ingress.Controller) *GenericController {
 			`Shows release information about the Ingress controller`)
 
 		ignoreIngressWithoutClass = flags.Bool("ignore-ingress-without-class", false,
-			`Defines if the ingress without the ingress.class annotation will be considered or not. If true then
-			only the ingresses with the matching ingress.class annotation will be considered, ingresses with missing
+			`Defines if the ingress without the ingress.class annotation will be considered or not. If true then 
+			only the ingresses with the matching ingress.class annotation will be considered, ingresses with missing 
 			or different ingress.class annotation will not be considered. Default is false`)
 
 		resolverPluginPath = flags.String("resolver-plugin-path", "",

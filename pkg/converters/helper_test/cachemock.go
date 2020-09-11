@@ -24,7 +24,6 @@ import (
 
 	api "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1beta1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	convtypes "github.com/jcmoraisjr/haproxy-ingress/pkg/converters/types"
 )
@@ -56,7 +55,6 @@ func NewCacheMock(tracker convtypes.Tracker) *CacheMock {
 		SvcList:     []*api.Service{},
 		EpList:      map[string]*api.Endpoints{},
 		TermPodList: map[string][]*api.Pod{},
-		PodList:     map[string]*api.Pod{},
 		SecretTLSPath: map[string]string{
 			"system/ingress-default": "/tls/tls-default.pem",
 		},
@@ -68,17 +66,6 @@ func (c *CacheMock) buildSecretName(defaultNamespace, secretName string) string 
 		return secretName
 	}
 	return defaultNamespace + "/" + secretName
-}
-
-func (c *CacheMock) DefinePod(namespace string, name string) {
-	fullName := namespace + "/" + name
-	c.PodList[fullName] = &api.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-			Labels:    map[string]string{},
-		},
-	}
 }
 
 // GetIngress ...
