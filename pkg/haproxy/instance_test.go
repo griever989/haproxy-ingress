@@ -54,6 +54,8 @@ func TestBackends(t *testing.T) {
 				b.Cookie.Name = "ingress-controller"
 				b.Cookie.Strategy = "insert"
 				b.Cookie.Keywords = "indirect nocache httponly"
+				ep := *endpointS1
+				b.Endpoints = []*hatypes.Endpoint{&ep}
 				b.Endpoints[0].CookieAffinity = true
 				b.Endpoints[0].CookieValue = "s1"
 			},
