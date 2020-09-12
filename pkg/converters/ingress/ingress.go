@@ -582,9 +582,19 @@ func (c *converter) addBackend(source *annotations.Source, hostname, uri, fullSv
 		default:
 			backend.EpNaming = hatypes.EpSequence
 		}
+
+		switch mapper.Get(ingtypes.BackSessionCookieValue).Value {
+		default:
+			backend.EpCookieStrategy = hatypes.EpCookieName
+		case "container-env":
+			backend.EpCookieStrategy = hatypes.EpCookieEnv
+		}
+
+		backend.EnvVarCookieName = mapper.Get(ingtypes.BackSessionCookieEnvName).Value
+
 		if mapper.Get(ingtypes.BackServiceUpstream).Bool() {
 			if addr, err := convutils.CreateSvcEndpoint(svc, port); err == nil {
-				backend.AcquireEndpoint(addr.IP, addr.Port, addr.TargetRef)
+				backend.AcquireEndpoint(addr.IP, addr.Port, addr.TargetRef, "")
 			} else {
 				c.logger.Error("error adding IP of service '%s': %v", fullSvcName, err)
 			}
@@ -613,16 +623,16 @@ func (c *converter) addTLS(source *annotations.Source, hostname, secretName stri
 }
 
 func (c *converter) addEndpoints(svc *api.Service, svcPort *api.ServicePort, backend *hatypes.Backend) error {
-	ready, notReady, err := convutils.CreateEndpoints(c.cache, svc, svcPort)
+	ready, notReady, err := convutils.CreateEndpoints(c.cache, svc, svcPort, backend.EnvVarCookieName)
 	if err != nil {
 		return err
 	}
 	for _, addr := range ready {
-		backend.AcquireEndpoint(addr.IP, addr.Port, addr.TargetRef)
+		backend.AcquireEndpoint(addr.IP, addr.Port, addr.TargetRef, addr.CookieEnv)
 	}
 	if c.globalConfig.Get(ingtypes.GlobalDrainSupport).Bool() {
 		for _, addr := range notReady {
-			ep := backend.AcquireEndpoint(addr.IP, addr.Port, addr.TargetRef)
+			ep := backend.AcquireEndpoint(addr.IP, addr.Port, addr.TargetRef, addr.CookieEnv)
 			ep.Weight = 0
 		}
 		pods, err := c.cache.GetTerminatingPods(svc, convtypes.TrackingTarget{Backend: backend.BackendID()})
@@ -632,7 +642,13 @@ func (c *converter) addEndpoints(svc *api.Service, svcPort *api.ServicePort, bac
 		for _, pod := range pods {
 			targetPort := convutils.FindContainerPort(pod, svcPort)
 			if targetPort > 0 {
-				ep := backend.AcquireEndpoint(pod.Status.PodIP, targetPort, pod.Namespace+"/"+pod.Name)
+				targetRef := pod.Namespace + "/" + pod.Name
+				cookieEnv := ""
+				container := convutils.FindContainerAtPort(c.cache, targetRef, targetPort)
+				if container != nil {
+					cookieEnv = convutils.FindEnvFromContainer(container, backend.EnvVarCookieName)
+				}
+				ep := backend.AcquireEndpoint(pod.Status.PodIP, targetPort, targetRef, cookieEnv)
 				ep.Weight = 0
 			} else {
 				c.logger.Warn("skipping endpoint %s of service %s/%s: port '%s' was not found",

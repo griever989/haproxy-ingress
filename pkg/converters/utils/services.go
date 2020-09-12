@@ -66,15 +66,43 @@ func FindContainerPort(pod *api.Pod, svcPort *api.ServicePort) int {
 	return 0
 }
 
+// Finds a container for the pod at `podTargetRef` exposed at port `port`
+func FindContainerAtPort(cache types.Cache, podTargetRef string, port int) *api.Container {
+	pod, err := cache.GetPod(podTargetRef)
+	if err != nil {
+		return nil
+	}
+	containers := pod.Spec.Containers
+	for _, container := range containers {
+		for _, cp := range container.Ports {
+			if cp.ContainerPort == int32(port) {
+				return &container
+			}
+		}
+	}
+	return nil
+}
+
+// Finds the value of an environment variable with name `name` from the container
+func FindEnvFromContainer(container *api.Container, name string) string {
+	for _, env := range container.Env {
+		if env.Name == name {
+			return env.Value
+		}
+	}
+	return ""
+}
+
 // Endpoint ...
 type Endpoint struct {
 	IP        string
 	Port      int
 	TargetRef string
+	CookieEnv string
 }
 
 // CreateEndpoints ...
-func CreateEndpoints(cache types.Cache, svc *api.Service, svcPort *api.ServicePort) (ready, notReady []*Endpoint, err error) {
+func CreateEndpoints(cache types.Cache, svc *api.Service, svcPort *api.ServicePort, envVarName string) (ready, notReady []*Endpoint, err error) {
 	if svc.Spec.Type == api.ServiceTypeExternalName {
 		ready, err := createEndpointsExternalName(svc, svcPort)
 		return ready, nil, err
@@ -88,10 +116,10 @@ func CreateEndpoints(cache types.Cache, svc *api.Service, svcPort *api.ServicePo
 			if matchPort(svcPort, &epPort) {
 				port := int(epPort.Port)
 				for _, addr := range subset.Addresses {
-					ready = append(ready, newEndpointAddr(&addr, port))
+					ready = append(ready, newEndpointAddr(cache, &addr, port, envVarName))
 				}
 				for _, addr := range subset.NotReadyAddresses {
-					notReady = append(notReady, newEndpointAddr(&addr, port))
+					notReady = append(notReady, newEndpointAddr(cache, &addr, port, envVarName))
 				}
 			}
 		}
@@ -134,11 +162,18 @@ func createEndpointsExternalName(svc *api.Service, svcPort *api.ServicePort) (en
 	return endpoints, nil
 }
 
-func newEndpointAddr(addr *api.EndpointAddress, port int) *Endpoint {
+func newEndpointAddr(cache types.Cache, addr *api.EndpointAddress, port int, envName string) *Endpoint {
+	targetRef := targetRefToString(addr.TargetRef)
+	cookieEnv := ""
+	container := FindContainerAtPort(cache, targetRef, port)
+	if container != nil {
+		cookieEnv = FindEnvFromContainer(container, envName)
+	}
 	return &Endpoint{
 		IP:        addr.IP,
 		Port:      port,
-		TargetRef: targetRefToString(addr.TargetRef),
+		TargetRef: targetRef,
+		CookieEnv: cookieEnv,
 	}
 }
 

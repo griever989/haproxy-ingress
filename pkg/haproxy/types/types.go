@@ -406,6 +406,15 @@ const (
 	EpTargetRef
 )
 
+// EndpointCookieStrategy ...
+type EndpointCookieStrategy int
+
+// ...
+const (
+	EpCookieName EndpointCookieStrategy = iota
+	EpCookieEnv
+)
+
 // Backends ...
 type Backends struct {
 	items, itemsAdd, itemsDel map[string]*Backend
@@ -430,15 +439,17 @@ type Backend struct {
 	//
 	// IMPLEMENT
 	// use BackendID
-	shard     int
-	ID        string
-	Namespace string
-	Name      string
-	Port      string
-	Endpoints []*Endpoint
-	EpNaming  EndpointNaming
-	Paths     []*BackendPath
-	PathsMap  *HostsMap
+	shard            int
+	ID               string
+	Namespace        string
+	Name             string
+	Port             string
+	Endpoints        []*Endpoint
+	EpNaming         EndpointNaming
+	EpCookieStrategy EndpointCookieStrategy
+	EnvVarCookieName string
+	Paths            []*BackendPath
+	PathsMap         *HostsMap
 	//
 	// per backend config
 	//
@@ -492,14 +503,16 @@ type Backend struct {
 
 // Endpoint ...
 type Endpoint struct {
-	Enabled   bool
-	Label     string
-	IP        string
-	Name      string
-	Port      int
-	Target    string
-	TargetRef string
-	Weight    int
+	Enabled        bool
+	Label          string
+	IP             string
+	Name           string
+	Port           int
+	Target         string
+	TargetRef      string
+	Weight         int
+	CookieValue    string
+	CookieAffinity bool
 }
 
 // BlueGreenConfig ...

@@ -42,7 +42,7 @@ func TestCreateEndpointsExternalName(t *testing.T) {
 	}
 
 	svcPort := FindServicePort(svc, "8080")
-	ready, notReady, err := CreateEndpoints(nil, svc, svcPort)
+	ready, notReady, err := CreateEndpoints(nil, svc, svcPort, "")
 	expected := []*Endpoint{
 		{
 			IP:   "10.0.1.10",
@@ -118,7 +118,7 @@ func TestCreateEndpoints(t *testing.T) {
 		port := FindServicePort(svc, test.findPort)
 		var endpoints []*Endpoint
 		if port != nil {
-			endpoints, _, _ = CreateEndpoints(cache, svc, port)
+			endpoints, _, _ = CreateEndpoints(cache, svc, port, "")
 		}
 		if !reflect.DeepEqual(endpoints, test.expected) {
 			t.Errorf("endpoints differ: expected=%+v actual=%+v", test.expected, endpoints)
