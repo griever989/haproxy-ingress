@@ -3385,17 +3385,8 @@ func (c *testConfig) readConfig(fileName string) string {
 func (c *testConfig) compareText(name, actual, expected string) {
 	txtActual := "\n" + strings.Trim(actual, "\n")
 	txtExpected := "\n" + strings.Trim(expected, "\n")
-	linesActual := strings.Split(txtActual, "\n")
-	linesExpected := strings.Split(txtExpected, "\n")
-	lenActual := len(linesActual)
-	for i, line := range linesExpected {
-		lineToCompare := ""
-		if i < lenActual {
-			lineToCompare = linesActual[i]
-		}
-		if line != lineToCompare {
-			c.t.Error(fmt.Sprintf("\ndiff of %s in line %v:\n", name, i+1) + diff.Diff(line, lineToCompare))
-		}
+	if txtActual != txtExpected {
+		c.t.Error("\ndiff of " + name + ":" + diff.Diff(txtExpected, txtActual))
 	}
 }
 
