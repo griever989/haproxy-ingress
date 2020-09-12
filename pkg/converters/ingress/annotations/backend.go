@@ -62,6 +62,15 @@ func (c *updater) buildBackendAffinity(d *backData) {
 	d.backend.Cookie.Keywords = keywords
 	d.backend.Cookie.Dynamic = d.mapper.Get(ingtypes.BackSessionCookieDynamic).Bool()
 	d.backend.Cookie.Shared = d.mapper.Get(ingtypes.BackSessionCookieShared).Bool()
+
+	switch d.mapper.Get(ingtypes.BackSessionCookieValue).Value {
+	default:
+		d.backend.EpCookieStrategy = hatypes.EpCookieName
+	case "container-env":
+		d.backend.EpCookieStrategy = hatypes.EpCookieEnv
+	}
+
+	d.backend.EnvVarCookieName = d.mapper.Get(ingtypes.BackSessionCookieEnvName).Value
 }
 
 func (c *updater) buildBackendAuthHTTP(d *backData) {
