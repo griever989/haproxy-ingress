@@ -633,6 +633,23 @@ d1.local/ path01`,
     server s32 172.17.0.132:8080 weight 100
     server s33 172.17.0.133:8080 weight 100`,
 		},
+		// simulates a config where the cookie value is an env var from a pod
+		{
+			doconfig: func(g *hatypes.Global, h *hatypes.Host, b *hatypes.Backend) {
+				b.Cookie.Name = "serverId"
+				b.Cookie.Strategy = "insert"
+				b.Cookie.Keywords = "preserve nocache"
+				b.EpCookieStrategy = hatypes.EpCookieEnv
+				b.EnvVarCookieName = "SERVER_ID"
+				ep1 := *endpointS1
+				b.Endpoints = []*hatypes.Endpoint{&ep1}
+				b.Endpoints[0].CookieAffinity = true
+				b.Endpoints[0].CookieValue = "custom_val_1"
+			},
+			srvsuffix: "cookie custom_val_1",
+			expected: `
+    cookie serverId insert preserve nocache`,
+		},
 	}
 	for _, test := range testCases {
 		c := setup(t)
