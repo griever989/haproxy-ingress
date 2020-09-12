@@ -200,6 +200,8 @@ The table below describes all supported configuration keys.
 | [`session-cookie-name`](#affinity)                   | cookie name                             | Backend |                    |
 | [`session-cookie-shared`](#affinity)                 | [true\|false]                           | Backend | `false`            |
 | [`session-cookie-strategy`](#affinity)               | [insert\|prefix\|rewrite]               | Backend |                    |
+| [`session-cookie-value-env`](#affinity)              | container environment variable name     | Backend |                    |
+| [`session-cookie-value-strategy`](#affinity)         | [name\|container-env]                   | Backend | `name`             |
 | [`slots-min-free`](#dynamic-scaling)                 | minimum number of free slots            | Backend | `0`                |
 | [`ssl-cipher-suites`](#ssl-ciphers)                  | colon-separated list                    | Host    | [see description](#ssl-ciphers) |
 | [`ssl-cipher-suites-backend`](#ssl-ciphers)          | colon-separated list                    | Backend | [see description](#ssl-ciphers) |
@@ -339,15 +341,17 @@ See also:
 
 ## Affinity
 
-| Configuration key           | Scope     | Default                     | Since |
-|-----------------------------|-----------|-----------------------------|-------|
-| `affinity`                  | `Backend` | `false`                     |       |
-| `cookie-key`                | `Global`  | `Ingress`                   |       |
-| `session-cookie-dynamic`    | `Backend` | `true`                      |       |
-| `session-cookie-keywords`   | `Backend` | `indirect nocache httponly` | v0.11 |
-| `session-cookie-name`       | `Backend` | `INGRESSCOOKIE`             |       |
-| `session-cookie-shared`     | `Backend` | `false`                     | v0.8  |
-| `session-cookie-strategy`   | `Backend` | `insert`                    |       |
+| Configuration key               | Scope     | Default                     | Since |
+|---------------------------------|-----------|-----------------------------|-------|
+| `affinity`                      | `Backend` | `false`                     |       |
+| `cookie-key`                    | `Global`  | `Ingress`                   |       |
+| `session-cookie-dynamic`        | `Backend` | `true`                      |       |
+| `session-cookie-keywords`       | `Backend` | `indirect nocache httponly` | v0.11 |
+| `session-cookie-name`           | `Backend` | `INGRESSCOOKIE`             |       |
+| `session-cookie-shared`         | `Backend` | `false`                     | v0.8  |
+| `session-cookie-strategy`       | `Backend` | `insert`                    |       |
+| `session-cookie-value-env`      | `Backend` | `""`                        | v0.11 |
+| `session-cookie-value-strategy` | `Backend` | `name`                      | v0.11 |
 
 Configure if HAProxy should maintain client requests to the same backend server.
 
@@ -358,6 +362,8 @@ Configure if HAProxy should maintain client requests to the same backend server.
 * `session-cookie-name`: the name of the cookie. `INGRESSCOOKIE` is the default value if not declared.
 * `session-cookie-shared`: defines if the persistence cookie should be shared between all domains that uses this backend. Defaults to `false`. If `true` the `Set-Cookie` response will declare all the domains that shares this backend, indicating to the HTTP agent that all of them should use the same backend server.
 * `session-cookie-strategy`: the cookie strategy to use (insert, rewrite, prefix). `insert` is the default value if not declared.
+* `session-cookie-value-env`: indicates the name of an environment variable on pod containers which will be used to supply the cookie value for a backend server. Only used when `session-cookie-value-strategy` is set to `container-env`. Eg. if `session-cookie-value-env` = `SERVER_ID` and a pod container has `SERVER_ID=cook_1234`, then the value of the cookie for the server that points to that pod will be `cook_1234`. This allows containers to be able to predict what cookie they will be assigned and may also be useful when `session-cookie-keywords` is set to `preserve` for stateful servers that have more control over assigning their own cookies.
+* `session-cookie-value-strategy`: the strategy to use to calculate the cookie value of a server (`name`, `container-env`). `name` is the default if not declared, and indicates that the cookie will be set based on the name defined in `backend-server-naming`. `container-env` indicates that the cookie will be set based on `session-cookie-value-env`.
 
 Note for `dynamic-scaling` users only, v0.5 or older: the hash of the server is built based on it's name.
 When the slots are scaled down, the remaining servers might change it's server name on
