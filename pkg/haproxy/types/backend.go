@@ -81,12 +81,15 @@ func (b *Backend) addEndpoint(ip string, port int, targetRef string, cookieEnv s
 		name = fmt.Sprintf("srv%03d", len(b.Endpoints)+1)
 	}
 
-	var cookieValue string
-	switch b.EpCookieStrategy {
-	case EpCookieName:
-		cookieValue = name
-	case EpCookieEnv:
-		cookieValue = cookieEnv
+	cookieValue := ""
+	cookieAffinity := !b.ModeTCP && b.Cookie.Name != "" && !b.Cookie.Dynamic
+	if cookieAffinity {
+		switch b.EpCookieStrategy {
+		case EpCookieName:
+			cookieValue = name
+		case EpCookieEnv:
+			cookieValue = cookieEnv
+		}
 	}
 
 	endpoint := &Endpoint{
@@ -98,7 +101,7 @@ func (b *Backend) addEndpoint(ip string, port int, targetRef string, cookieEnv s
 		TargetRef:      targetRef,
 		Weight:         b.Server.InitialWeight,
 		CookieValue:    cookieValue,
-		CookieAffinity: !b.ModeTCP && b.Cookie.Name != "" && !b.Cookie.Dynamic,
+		CookieAffinity: cookieAffinity,
 	}
 	b.Endpoints = append(b.Endpoints, endpoint)
 	return endpoint
