@@ -3370,10 +3370,12 @@ func (c *testConfig) compareText(name, actual, expected string) {
 	linesExpected := strings.Split(txtExpected, "\n")
 	lenActual := len(linesActual)
 	for i, line := range linesExpected {
+		lineToCompare := ""
 		if i < lenActual {
-			if line != linesActual[i] {
-				c.t.Error(fmt.Sprintf("\ndiff of %s in line %v:\n", name, i+1) + diff.Diff(line, linesActual[i]))
-			}
+			lineToCompare = linesActual[i]
+		}
+		if line != lineToCompare {
+			c.t.Error(fmt.Sprintf("\ndiff of %s in line %v:\n", name, i+1) + diff.Diff(line, lineToCompare))
 		}
 	}
 }
