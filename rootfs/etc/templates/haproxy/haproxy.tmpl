@@ -604,6 +604,10 @@ backend {{ $backend.ID }}
 {{- end }}
 {{- end }}
 {{- range $ep := $backend.Endpoints }}
+    # cookieAff: {{ $ep.CookieAffinity }}
+    # cookieVal: {{ $ep.CookieValue }}
+    # backendEpCookieStrategy: {{ $backend.EpCookieStrategy }}
+    # backendCookieName: {{ $backend.Cookie.Name }}
     server {{ $ep.Name }} {{ $ep.IP }}:{{ $ep.Port }}
         {{- if not $ep.Enabled }} disabled{{ end }}
         {{- "" }} weight {{ $ep.Weight }}
