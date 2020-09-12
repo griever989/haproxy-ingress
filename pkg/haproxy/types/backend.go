@@ -40,10 +40,14 @@ func (b *Backend) BackendID() BackendID {
 	}
 }
 
+func cookieMatches(endpoint *Endpoint, cookieValue string) bool {
+	return (!endpoint.CookieAffinity && cookieValue == "") || (endpoint.CookieAffinity && endpoint.CookieValue == cookieValue)
+}
+
 // FindEndpoint ...
-func (b *Backend) FindEndpoint(target string) *Endpoint {
+func (b *Backend) FindEndpoint(target string, cookieValue string) *Endpoint {
 	for _, endpoint := range b.Endpoints {
-		if endpoint.Target == target {
+		if endpoint.Target == target && cookieMatches(endpoint, cookieValue) {
 			return endpoint
 		}
 	}
@@ -52,7 +56,7 @@ func (b *Backend) FindEndpoint(target string) *Endpoint {
 
 // AcquireEndpoint ...
 func (b *Backend) AcquireEndpoint(ip string, port int, targetRef string, cookieEnv string) *Endpoint {
-	endpoint := b.FindEndpoint(fmt.Sprintf("%s:%d", ip, port))
+	endpoint := b.FindEndpoint(fmt.Sprintf("%s:%d", ip, port), cookieEnv)
 	if endpoint != nil {
 		return endpoint
 	}
