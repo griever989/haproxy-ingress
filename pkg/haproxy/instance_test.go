@@ -54,6 +54,8 @@ func TestBackends(t *testing.T) {
 				b.Cookie.Name = "ingress-controller"
 				b.Cookie.Strategy = "insert"
 				b.Cookie.Keywords = "indirect nocache httponly"
+				b.Endpoints[0].CookieAffinity = true
+				b.Endpoints[0].CookieValue = "s1"
 			},
 			srvsuffix: "cookie s1",
 			expected: `
@@ -3364,8 +3366,15 @@ func (c *testConfig) readConfig(fileName string) string {
 func (c *testConfig) compareText(name, actual, expected string) {
 	txtActual := "\n" + strings.Trim(actual, "\n")
 	txtExpected := "\n" + strings.Trim(expected, "\n")
-	if txtActual != txtExpected {
-		c.t.Error("\ndiff of " + name + ":" + diff.Diff(txtExpected, txtActual))
+	linesActual := strings.Split(txtActual, "\n")
+	linesExpected := strings.Split(txtExpected, "\n")
+	lenActual := len(linesActual)
+	for i, line := range linesExpected {
+		if i < lenActual {
+			if line != linesActual[i] {
+				c.t.Error(fmt.Sprintf("\ndiff of %s in line %v:\n", name, i+1) + diff.Diff(line, linesActual[i]))
+			}
+		}
 	}
 }
 
