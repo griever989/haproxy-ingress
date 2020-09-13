@@ -169,6 +169,7 @@ func (c *converter) syncFull() {
 		c.syncIngress(ing)
 	}
 	c.fullSyncAnnotations()
+	c.logger.Info("syncfull")
 	c.syncChangedEndpointCookies()
 }
 
@@ -282,6 +283,7 @@ func (c *converter) syncPartial() {
 		c.syncIngress(ing)
 	}
 	c.partialSyncAnnotations()
+	c.logger.Info("syncpartial")
 	c.syncChangedEndpointCookies()
 }
 
@@ -449,7 +451,11 @@ func (c *converter) syncChangedEndpointCookies() {
 	// 	}
 	// }
 	for _, backend := range c.haproxy.Backends().Items() {
-		c.logger.Info("syncing cookies for backend %s/%s", backend.Namespace, backend.Name)
+		c.logger.Info("syncing cookies for backend (items) %s/%s", backend.Namespace, backend.Name)
+		c.syncBackendEndpointCookies(backend)
+	}
+	for _, backend := range c.haproxy.Backends().ItemsAdd() {
+		c.logger.Info("syncing cookies for backend (itemsadd) %s/%s", backend.Namespace, backend.Name)
 		c.syncBackendEndpointCookies(backend)
 	}
 }
