@@ -162,11 +162,10 @@ func createEndpointsExternalName(svc *api.Service, svcPort *api.ServicePort) (en
 }
 
 func newEndpointAddr(addr *api.EndpointAddress, port int) *Endpoint {
-	targetRef := targetRefToString(addr.TargetRef)
 	return &Endpoint{
 		IP:        addr.IP,
 		Port:      port,
-		TargetRef: targetRef,
+		TargetRef: targetRefToString(addr.TargetRef),
 	}
 }
 

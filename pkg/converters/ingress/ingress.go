@@ -614,18 +614,16 @@ func (c *converter) syncBackendEndpointCookies(backend *hatypes.Backend) {
 	cookieAffinity := backend.CookieAffinity()
 	for _, ep := range backend.Endpoints {
 		if cookieAffinity && ep.Enabled {
-			if backend.CookieAffinity() {
-				switch backend.EpCookieStrategy {
-				default:
-					ep.CookieValue = ep.Name
-				case hatypes.EpCookieEnv:
-					if ep.TargetRef != "" {
-						container := convutils.FindContainerAtPort(c.cache, ep.TargetRef, ep.Port)
-						if container != nil {
-							envName := backend.EnvVarCookieName
-							envValue := convutils.FindEnvFromContainer(container, envName)
-							ep.CookieValue = envValue
-						}
+			switch backend.EpCookieStrategy {
+			default:
+				ep.CookieValue = ep.Name
+			case hatypes.EpCookieEnv:
+				if ep.TargetRef != "" {
+					container := convutils.FindContainerAtPort(c.cache, ep.TargetRef, ep.Port)
+					if container != nil {
+						envName := backend.EnvVarCookieName
+						envValue := convutils.FindEnvFromContainer(container, envName)
+						ep.CookieValue = envValue
 					}
 				}
 			}

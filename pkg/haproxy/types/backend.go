@@ -80,7 +80,6 @@ func (b *Backend) addEndpoint(ip string, port int, targetRef string) *Endpoint {
 	if name == "" {
 		name = fmt.Sprintf("srv%03d", len(b.Endpoints)+1)
 	}
-
 	endpoint := &Endpoint{
 		Name:      name,
 		IP:        ip,
