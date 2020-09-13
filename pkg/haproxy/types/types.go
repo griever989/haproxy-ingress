@@ -503,16 +503,15 @@ type Backend struct {
 
 // Endpoint ...
 type Endpoint struct {
-	Enabled        bool
-	Label          string
-	IP             string
-	Name           string
-	Port           int
-	Target         string
-	TargetRef      string
-	Weight         int
-	CookieValue    string
-	CookieAffinity bool
+	Enabled     bool
+	Label       string
+	IP          string
+	Name        string
+	Port        int
+	Target      string
+	TargetRef   string
+	Weight      int
+	CookieValue string
 }
 
 // BlueGreenConfig ...

@@ -604,14 +604,14 @@ backend {{ $backend.ID }}
 {{- end }}
 {{- end }}
 {{- range $ep := $backend.Endpoints }}
-    # cookieAff: {{ $ep.CookieAffinity }}
+    # cookieDynamic: {{ $backend.Cookie.Dynamic }}
     # cookieVal: {{ $ep.CookieValue }}
     # backendEpCookieStrategy: {{ $backend.EpCookieStrategy }}
     # backendCookieName: {{ $backend.Cookie.Name }}
     server {{ $ep.Name }} {{ $ep.IP }}:{{ $ep.Port }}
         {{- if not $ep.Enabled }} disabled{{ end }}
         {{- "" }} weight {{ $ep.Weight }}
-        {{- if and $ep.CookieAffinity $ep.CookieValue }} cookie {{ $ep.CookieValue }}{{ end }}
+        {{- if and (not $backend.ModeTCP) ($backend.Cookie.Name) (not $backend.Cookie.Dynamic) ($ep.CookieValue) }} cookie {{ $ep.CookieValue }}{{ end }}
         {{- template "backend" map $backend }}
 {{- end }}
 {{- end }}

@@ -56,7 +56,6 @@ func TestBackends(t *testing.T) {
 				b.Cookie.Keywords = "indirect nocache httponly"
 				ep := *endpointS1
 				b.Endpoints = []*hatypes.Endpoint{&ep}
-				b.Endpoints[0].CookieAffinity = true
 				b.Endpoints[0].CookieValue = "s1"
 			},
 			srvsuffix: "cookie s1",
@@ -643,7 +642,6 @@ d1.local/ path01`,
 				b.EnvVarCookieName = "SERVER_ID"
 				ep1 := *endpointS1
 				b.Endpoints = []*hatypes.Endpoint{&ep1}
-				b.Endpoints[0].CookieAffinity = true
 				b.Endpoints[0].CookieValue = "custom_val_1"
 			},
 			srvsuffix: "cookie custom_val_1",

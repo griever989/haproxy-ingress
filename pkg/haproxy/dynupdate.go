@@ -210,7 +210,7 @@ func (d *dynUpdater) checkBackendPair(pair *backendPair) bool {
 	for i := range added {
 		// reusing empty slots from oldBack
 		added[i].Name = empty[i].Name
-		if (added[i].CookieAffinity != empty[i].CookieAffinity) || (added[i].CookieAffinity && (added[i].CookieValue != empty[i].CookieValue)) {
+		if added[i].CookieValue != empty[i].CookieValue {
 			// if cookie doesn't match here, assume that preserving the value is
 			// important and don't even enable the endpoint before reloading
 			updated = false
@@ -232,7 +232,7 @@ func (d *dynUpdater) checkEndpointPair(backname string, pair *epPair) bool {
 	if reflect.DeepEqual(pair.old, pair.cur) {
 		return true
 	}
-	if (pair.old.CookieAffinity != pair.cur.CookieAffinity) || (pair.cur.CookieAffinity && (pair.old.CookieValue != pair.cur.CookieValue)) {
+	if pair.old.CookieValue != pair.cur.CookieValue {
 		// if cookie doesn't match here, assume that preserving the value is
 		// important and don't even enable the endpoint before reloading
 		return false

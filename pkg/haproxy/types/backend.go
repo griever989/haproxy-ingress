@@ -40,14 +40,14 @@ func (b *Backend) BackendID() BackendID {
 	}
 }
 
-func cookieMatches(endpoint *Endpoint, cookieValue string) bool {
-	return (!endpoint.CookieAffinity && cookieValue == "") || (endpoint.CookieAffinity && endpoint.CookieValue == cookieValue)
+func cookieMatches(backend *Backend, endpoint *Endpoint, cookieValue string) bool {
+	return (!backend.CookieAffinity() && cookieValue == "") || (backend.CookieAffinity() && endpoint.CookieValue == cookieValue)
 }
 
 // FindEndpoint ...
 func (b *Backend) FindEndpoint(target string, cookieValue string) *Endpoint {
 	for _, endpoint := range b.Endpoints {
-		if endpoint.Target == target && cookieMatches(endpoint, cookieValue) {
+		if endpoint.Target == target && cookieMatches(b, endpoint, cookieValue) {
 			return endpoint
 		}
 	}
@@ -86,8 +86,7 @@ func (b *Backend) addEndpoint(ip string, port int, targetRef string, cookieEnv s
 	}
 
 	cookieValue := ""
-	cookieAffinity := !b.ModeTCP && b.Cookie.Name != "" && !b.Cookie.Dynamic
-	if cookieAffinity {
+	if b.CookieAffinity() {
 		switch b.EpCookieStrategy {
 		case EpCookieName:
 			cookieValue = name
@@ -97,15 +96,14 @@ func (b *Backend) addEndpoint(ip string, port int, targetRef string, cookieEnv s
 	}
 
 	endpoint := &Endpoint{
-		Name:           name,
-		IP:             ip,
-		Port:           port,
-		Target:         fmt.Sprintf("%s:%d", ip, port),
-		Enabled:        true,
-		TargetRef:      targetRef,
-		Weight:         b.Server.InitialWeight,
-		CookieValue:    cookieValue,
-		CookieAffinity: cookieAffinity,
+		Name:        name,
+		IP:          ip,
+		Port:        port,
+		Target:      fmt.Sprintf("%s:%d", ip, port),
+		Enabled:     true,
+		TargetRef:   targetRef,
+		Weight:      b.Server.InitialWeight,
+		CookieValue: cookieValue,
 	}
 	b.Endpoints = append(b.Endpoints, endpoint)
 	return endpoint
@@ -116,6 +114,11 @@ func (b *Backend) SortEndpoints() {
 	sort.SliceStable(b.Endpoints, func(i, j int) bool {
 		return b.Endpoints[i].Name < b.Endpoints[j].Name
 	})
+}
+
+// CookieAffinity ...
+func (b *Backend) CookieAffinity() bool {
+	return !b.ModeTCP && b.Cookie.Name != "" && !b.Cookie.Dynamic
 }
 
 // FindBackendPath ...
