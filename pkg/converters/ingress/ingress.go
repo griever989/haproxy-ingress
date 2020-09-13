@@ -281,6 +281,7 @@ func (c *converter) syncPartial() {
 		c.syncIngress(ing)
 	}
 	c.partialSyncAnnotations()
+	c.syncChangedEndpointCookies()
 }
 
 // trackAddedIngress add tracking hostnames and backends to new ingress objects
@@ -434,9 +435,6 @@ func (c *converter) syncIngress(ing *networking.Ingress) {
 			}
 		}
 	}
-
-	// move to other spot with .changed stuff?
-	c.syncChangedEndpointCookies()
 }
 
 func (c *converter) syncChangedEndpointCookies() {
@@ -444,8 +442,8 @@ func (c *converter) syncChangedEndpointCookies() {
 		for _, backend := range c.haproxy.Backends().Items() {
 			// make a t.backendByName lookup?
 			if backend.Namespace == ep.Namespace && backend.Name == ep.Name {
-				c.syncBackendEndpointCookies(backend)
 				c.logger.Info("syncing cookies for backend %s/%s", backend.Namespace, backend.Name)
+				c.syncBackendEndpointCookies(backend)
 			}
 		}
 	}
