@@ -438,14 +438,18 @@ func (c *converter) syncIngress(ing *networking.Ingress) {
 }
 
 func (c *converter) syncChangedEndpointCookies() {
-	for _, ep := range c.changed.Endpoints {
-		for _, backend := range c.haproxy.Backends().Items() {
-			// make a t.backendByName lookup?
-			if backend.Namespace == ep.Namespace && backend.Name == ep.Name {
-				c.logger.Info("syncing cookies for backend %s/%s", backend.Namespace, backend.Name)
-				c.syncBackendEndpointCookies(backend)
-			}
-		}
+	// for _, ep := range c.changed.Endpoints {
+	// 	for _, backend := range c.haproxy.Backends().Items() {
+	// 		// make a t.backendByName lookup?
+	// 		if backend.Namespace == ep.Namespace && backend.Name == ep.Name {
+	// 			c.logger.Info("syncing cookies for backend %s/%s", backend.Namespace, backend.Name)
+	// 			c.syncBackendEndpointCookies(backend)
+	// 		}
+	// 	}
+	// }
+	for _, backend := range c.haproxy.Backends().Items() {
+		c.logger.Info("syncing cookies for backend %s/%s", backend.Namespace, backend.Name)
+		c.syncBackendEndpointCookies(backend)
 	}
 }
 
