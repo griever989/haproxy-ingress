@@ -434,6 +434,21 @@ func (c *converter) syncIngress(ing *networking.Ingress) {
 			}
 		}
 	}
+
+	// move to other spot with .changed stuff?
+	c.syncChangedEndpointCookies()
+}
+
+func (c *converter) syncChangedEndpointCookies() {
+	for _, ep := range c.changed.Endpoints {
+		for _, backend := range c.haproxy.Backends().Items() {
+			// make a t.backendByName lookup?
+			if backend.Namespace == ep.Namespace && backend.Name == ep.Name {
+				c.syncBackendEndpointCookies(backend)
+				c.logger.Info("syncing cookies for backend %s/%s", backend.Namespace, backend.Name)
+			}
+		}
+	}
 }
 
 func (c *converter) fullSyncAnnotations() {
@@ -613,11 +628,12 @@ func (c *converter) addBackend(source *annotations.Source, hostname, uri, fullSv
 func (c *converter) syncBackendEndpointCookies(backend *hatypes.Backend) {
 	cookieAffinity := backend.CookieAffinity()
 	for _, ep := range backend.Endpoints {
-		if cookieAffinity && ep.Enabled {
+		if cookieAffinity {
 			switch backend.EpCookieStrategy {
 			default:
 				ep.CookieValue = ep.Name
 			case hatypes.EpCookieEnv:
+				ep.CookieValue = ""
 				if ep.TargetRef != "" {
 					container := convutils.FindContainerAtPort(c.cache, ep.TargetRef, ep.Port)
 					if container != nil {
