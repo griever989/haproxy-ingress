@@ -169,6 +169,7 @@ func (c *converter) syncFull() {
 		c.syncIngress(ing)
 	}
 	c.fullSyncAnnotations()
+	c.syncChangedEndpointCookies()
 }
 
 func (c *converter) syncPartial() {
