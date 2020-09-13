@@ -629,6 +629,10 @@ func (c *converter) addBackend(source *annotations.Source, hostname, uri, fullSv
 
 func (c *converter) syncBackendEndpointCookies(backend *hatypes.Backend) {
 	cookieAffinity := backend.CookieAffinity()
+	c.logger.Info("CookieAffinity = %v, backend = %s/%s", cookieAffinity, backend.Namespace, backend.Name)
+	c.logger.Info("EpCookieStrategy = %v, backend = %s/%s", backend.EpCookieStrategy, backend.Namespace, backend.Name)
+	c.logger.Info("EnvVarCookieName = %v, backend = %s/%s", backend.EnvVarCookieName, backend.Namespace, backend.Name)
+	c.logger.Info("Backend.Cookie.Name = %v, backend = %s/%s", backend.Cookie.Name, backend.Namespace, backend.Name)
 	for _, ep := range backend.Endpoints {
 		if cookieAffinity {
 			switch backend.EpCookieStrategy {
@@ -648,6 +652,7 @@ func (c *converter) syncBackendEndpointCookies(backend *hatypes.Backend) {
 		} else {
 			ep.CookieValue = ""
 		}
+		c.logger.Info("ep.CookieValue = %v, ep = %s", ep.CookieValue, ep.Name)
 	}
 }
 
