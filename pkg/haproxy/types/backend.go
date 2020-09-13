@@ -88,7 +88,7 @@ func (b *Backend) addEndpoint(ip string, port int, targetRef string, cookieEnv s
 	cookieValue := ""
 	if b.CookieAffinity() {
 		switch b.EpCookieStrategy {
-		case EpCookieName:
+		default:
 			cookieValue = name
 		case EpCookieEnv:
 			cookieValue = cookieEnv
