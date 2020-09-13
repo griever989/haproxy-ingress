@@ -179,5 +179,4 @@ func (c *updater) UpdateBackendConfig(backend *hatypes.Backend, mapper *Mapper) 
 	c.buildBackendWAF(data)
 	c.buildBackendWhitelistHTTP(data)
 	c.buildBackendWhitelistTCP(data)
-	c.buildBackendEndpointCookieValues(data)
 }

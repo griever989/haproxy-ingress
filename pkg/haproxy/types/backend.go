@@ -40,14 +40,10 @@ func (b *Backend) BackendID() BackendID {
 	}
 }
 
-func cookieMatches(backend *Backend, endpoint *Endpoint, cookieValue string) bool {
-	return (!backend.CookieAffinity() && cookieValue == "") || (backend.CookieAffinity() && endpoint.CookieValue == cookieValue)
-}
-
 // FindEndpoint ...
-func (b *Backend) FindEndpoint(target string, cookieValue string) *Endpoint {
+func (b *Backend) FindEndpoint(target string) *Endpoint {
 	for _, endpoint := range b.Endpoints {
-		if endpoint.Target == target && cookieMatches(b, endpoint, cookieValue) {
+		if endpoint.Target == target {
 			return endpoint
 		}
 	}
@@ -55,22 +51,22 @@ func (b *Backend) FindEndpoint(target string, cookieValue string) *Endpoint {
 }
 
 // AcquireEndpoint ...
-func (b *Backend) AcquireEndpoint(ip string, port int, targetRef string, cookieEnv string) *Endpoint {
-	endpoint := b.FindEndpoint(fmt.Sprintf("%s:%d", ip, port), cookieEnv)
+func (b *Backend) AcquireEndpoint(ip string, port int, targetRef string) *Endpoint {
+	endpoint := b.FindEndpoint(fmt.Sprintf("%s:%d", ip, port))
 	if endpoint != nil {
 		return endpoint
 	}
-	return b.addEndpoint(ip, port, targetRef, cookieEnv)
+	return b.addEndpoint(ip, port, targetRef)
 }
 
 // AddEmptyEndpoint ...
 func (b *Backend) AddEmptyEndpoint() *Endpoint {
-	endpoint := b.addEndpoint("127.0.0.1", 1023, "", "")
+	endpoint := b.addEndpoint("127.0.0.1", 1023, "")
 	endpoint.Enabled = false
 	return endpoint
 }
 
-func (b *Backend) addEndpoint(ip string, port int, targetRef string, cookieEnv string) *Endpoint {
+func (b *Backend) addEndpoint(ip string, port int, targetRef string) *Endpoint {
 	var name string
 	switch b.EpNaming {
 	case EpTargetRef:
@@ -85,25 +81,14 @@ func (b *Backend) addEndpoint(ip string, port int, targetRef string, cookieEnv s
 		name = fmt.Sprintf("srv%03d", len(b.Endpoints)+1)
 	}
 
-	cookieValue := ""
-	if b.CookieAffinity() {
-		switch b.EpCookieStrategy {
-		default:
-			cookieValue = name
-		case EpCookieEnv:
-			cookieValue = cookieEnv
-		}
-	}
-
 	endpoint := &Endpoint{
-		Name:        name,
-		IP:          ip,
-		Port:        port,
-		Target:      fmt.Sprintf("%s:%d", ip, port),
-		Enabled:     true,
-		TargetRef:   targetRef,
-		Weight:      b.Server.InitialWeight,
-		CookieValue: cookieValue,
+		Name:      name,
+		IP:        ip,
+		Port:      port,
+		Target:    fmt.Sprintf("%s:%d", ip, port),
+		Enabled:   true,
+		TargetRef: targetRef,
+		Weight:    b.Server.InitialWeight,
 	}
 	b.Endpoints = append(b.Endpoints, endpoint)
 	return endpoint

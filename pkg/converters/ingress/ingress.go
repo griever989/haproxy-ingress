@@ -594,7 +594,7 @@ func (c *converter) addBackend(source *annotations.Source, hostname, uri, fullSv
 
 		if mapper.Get(ingtypes.BackServiceUpstream).Bool() {
 			if addr, err := convutils.CreateSvcEndpoint(svc, port); err == nil {
-				backend.AcquireEndpoint(addr.IP, addr.Port, addr.TargetRef, "")
+				backend.AcquireEndpoint(addr.IP, addr.Port, addr.TargetRef)
 			} else {
 				c.logger.Error("error adding IP of service '%s': %v", fullSvcName, err)
 			}
@@ -604,7 +604,35 @@ func (c *converter) addBackend(source *annotations.Source, hostname, uri, fullSv
 			}
 		}
 	}
+
+	c.syncBackendEndpointCookies(backend)
+
 	return backend, nil
+}
+
+func (c *converter) syncBackendEndpointCookies(backend *hatypes.Backend) {
+	cookieAffinity := backend.CookieAffinity()
+	for _, ep := range backend.Endpoints {
+		if cookieAffinity && ep.Enabled {
+			if backend.CookieAffinity() {
+				switch backend.EpCookieStrategy {
+				default:
+					ep.CookieValue = ep.Name
+				case hatypes.EpCookieEnv:
+					if ep.TargetRef != "" {
+						container := convutils.FindContainerAtPort(c.cache, ep.TargetRef, ep.Port)
+						if container != nil {
+							envName := backend.EnvVarCookieName
+							envValue := convutils.FindEnvFromContainer(container, envName)
+							ep.CookieValue = envValue
+						}
+					}
+				}
+			}
+		} else {
+			ep.CookieValue = ""
+		}
+	}
 }
 
 func (c *converter) addTLS(source *annotations.Source, hostname, secretName string) convtypes.CrtFile {
@@ -623,16 +651,16 @@ func (c *converter) addTLS(source *annotations.Source, hostname, secretName stri
 }
 
 func (c *converter) addEndpoints(svc *api.Service, svcPort *api.ServicePort, backend *hatypes.Backend) error {
-	ready, notReady, err := convutils.CreateEndpoints(c.cache, svc, svcPort, backend.EnvVarCookieName)
+	ready, notReady, err := convutils.CreateEndpoints(c.cache, svc, svcPort)
 	if err != nil {
 		return err
 	}
 	for _, addr := range ready {
-		backend.AcquireEndpoint(addr.IP, addr.Port, addr.TargetRef, addr.CookieEnv)
+		backend.AcquireEndpoint(addr.IP, addr.Port, addr.TargetRef)
 	}
 	if c.globalConfig.Get(ingtypes.GlobalDrainSupport).Bool() {
 		for _, addr := range notReady {
-			ep := backend.AcquireEndpoint(addr.IP, addr.Port, addr.TargetRef, addr.CookieEnv)
+			ep := backend.AcquireEndpoint(addr.IP, addr.Port, addr.TargetRef)
 			ep.Weight = 0
 		}
 		pods, err := c.cache.GetTerminatingPods(svc, convtypes.TrackingTarget{Backend: backend.BackendID()})
@@ -642,13 +670,7 @@ func (c *converter) addEndpoints(svc *api.Service, svcPort *api.ServicePort, bac
 		for _, pod := range pods {
 			targetPort := convutils.FindContainerPort(pod, svcPort)
 			if targetPort > 0 {
-				targetRef := pod.Namespace + "/" + pod.Name
-				cookieEnv := ""
-				container := convutils.FindContainerAtPort(c.cache, targetRef, targetPort)
-				if container != nil {
-					cookieEnv = convutils.FindEnvFromContainer(container, backend.EnvVarCookieName)
-				}
-				ep := backend.AcquireEndpoint(pod.Status.PodIP, targetPort, targetRef, cookieEnv)
+				ep := backend.AcquireEndpoint(pod.Status.PodIP, targetPort, pod.Namespace+"/"+pod.Name)
 				ep.Weight = 0
 			} else {
 				c.logger.Warn("skipping endpoint %s of service %s/%s: port '%s' was not found",
