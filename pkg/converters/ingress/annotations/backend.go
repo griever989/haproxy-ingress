@@ -25,6 +25,7 @@ import (
 	ingtypes "github.com/jcmoraisjr/haproxy-ingress/pkg/converters/ingress/types"
 	ingutils "github.com/jcmoraisjr/haproxy-ingress/pkg/converters/ingress/utils"
 	convtypes "github.com/jcmoraisjr/haproxy-ingress/pkg/converters/types"
+	convutils "github.com/jcmoraisjr/haproxy-ingress/pkg/converters/utils"
 	hatypes "github.com/jcmoraisjr/haproxy-ingress/pkg/haproxy/types"
 	"github.com/jcmoraisjr/haproxy-ingress/pkg/utils"
 )
@@ -188,6 +189,24 @@ func extractUserlist(source, secret, users string) ([]hatypes.User, []error) {
 		userlist = append(userlist, user)
 	}
 	return userlist, err
+}
+
+func (c *updater) buildBackendEndpointCookieValues(d *backData) {
+	cookieAffinity := d.backend.CookieAffinity()
+	for _, ep := range d.backend.Endpoints {
+		if cookieAffinity && ep.Enabled {
+			if ep.TargetRef != "" {
+				container := convutils.FindContainerAtPort(c.cache, ep.TargetRef, ep.Port)
+				if container != nil {
+					envName := d.mapper.Get(ingtypes.BackSessionCookieEnvName).Value
+					envValue := convutils.FindEnvFromContainer(container, envName)
+					ep.CookieValue = envValue
+				}
+			}
+		} else {
+			ep.CookieValue = ""
+		}
+	}
 }
 
 func (c *updater) buildBackendBlueGreenBalance(d *backData) {

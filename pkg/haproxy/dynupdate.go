@@ -221,7 +221,8 @@ func (d *dynUpdater) checkBackendPair(pair *backendPair) bool {
 
 	// copy remaining empty slots from oldBack to curBack, so it can be used in a future update
 	for i := len(added); i < len(empty); i++ {
-		curBack.AddEmptyEndpoint().Name = empty[i].Name
+		emptyAdded := curBack.AddEmptyEndpoint()
+		emptyAdded.Name = empty[i].Name
 	}
 	curBack.SortEndpoints()
 
