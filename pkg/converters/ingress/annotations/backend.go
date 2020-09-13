@@ -195,12 +195,19 @@ func (c *updater) buildBackendEndpointCookieValues(d *backData) {
 	cookieAffinity := d.backend.CookieAffinity()
 	for _, ep := range d.backend.Endpoints {
 		if cookieAffinity && ep.Enabled {
-			if ep.TargetRef != "" {
-				container := convutils.FindContainerAtPort(c.cache, ep.TargetRef, ep.Port)
-				if container != nil {
-					envName := d.mapper.Get(ingtypes.BackSessionCookieEnvName).Value
-					envValue := convutils.FindEnvFromContainer(container, envName)
-					ep.CookieValue = envValue
+			if d.backend.CookieAffinity() {
+				switch d.backend.EpCookieStrategy {
+				default:
+					ep.CookieValue = ep.Name
+				case hatypes.EpCookieEnv:
+					if ep.TargetRef != "" {
+						container := convutils.FindContainerAtPort(c.cache, ep.TargetRef, ep.Port)
+						if container != nil {
+							envName := d.mapper.Get(ingtypes.BackSessionCookieEnvName).Value
+							envValue := convutils.FindEnvFromContainer(container, envName)
+							ep.CookieValue = envValue
+						}
+					}
 				}
 			}
 		} else {
