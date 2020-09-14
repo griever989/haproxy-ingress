@@ -597,15 +597,6 @@ func (c *converter) addBackend(source *annotations.Source, hostname, uri, fullSv
 			backend.EpNaming = hatypes.EpSequence
 		}
 
-		switch mapper.Get(ingtypes.BackSessionCookieValue).Value {
-		default:
-			backend.EpCookieStrategy = hatypes.EpCookieName
-		case "container-env":
-			backend.EpCookieStrategy = hatypes.EpCookieEnv
-		}
-
-		backend.EnvVarCookieName = mapper.Get(ingtypes.BackSessionCookieEnvName).Value
-
 		if mapper.Get(ingtypes.BackServiceUpstream).Bool() {
 			if addr, err := convutils.CreateSvcEndpoint(svc, port); err == nil {
 				backend.AcquireEndpoint(addr.IP, addr.Port, addr.TargetRef)
@@ -618,7 +609,6 @@ func (c *converter) addBackend(source *annotations.Source, hostname, uri, fullSv
 			}
 		}
 	}
-
 	return backend, nil
 }
 
