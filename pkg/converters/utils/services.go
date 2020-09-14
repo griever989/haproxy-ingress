@@ -24,7 +24,6 @@ import (
 	api "k8s.io/api/core/v1"
 
 	"github.com/jcmoraisjr/haproxy-ingress/pkg/converters/types"
-	hatypes "github.com/jcmoraisjr/haproxy-ingress/pkg/types"
 )
 
 // FindServicePort ...
@@ -67,31 +66,20 @@ func FindContainerPort(pod *api.Pod, svcPort *api.ServicePort) int {
 	return 0
 }
 
-// FindContainerAtPort finds a container for the pod at `podTargetRef` exposed at port `port`
-func FindContainerAtPort(cache types.Cache, podTargetRef string, port int) *api.Container {
+// FindEnvFromPod finds the value of an environment variable with name
+// `name` from the containers of a pod. If the pod has multiple containers, it
+// returns the first container that has a non-empty value for the env var.
+func FindEnvFromPod(cache types.Cache, podTargetRef string, name string) string {
 	pod, err := cache.GetPod(podTargetRef)
 	if err != nil {
-		return nil
+		return ""
 	}
 	containers := pod.Spec.Containers
 	for _, container := range containers {
-		for _, cp := range container.Ports {
-			if cp.ContainerPort == int32(port) {
-				return &container
+		for _, env := range container.Env {
+			if env.Name == name && env.Value != "" {
+				return env.Value
 			}
-		}
-	}
-	return nil
-}
-
-// FindEnvFromContainer finds the value of an environment variable with name `name` from the container
-func FindEnvFromContainer(container *api.Container, name string, logger hatypes.Logger) string {
-	logger.Info("FindEnvFromContainer: looking for env name = %s ...", name)
-	for _, env := range container.Env {
-		logger.Info("FindEnvFromContainer: looking for env name = %s ... enumerated name = %s, val = %s", name, env.Name, env.Value)
-		if env.Name == name {
-			logger.Info("FindEnvFromContainer: looking for env name = %s ... enumerated name = %s, val = %s ... FOUND", name, env.Name, env.Value)
-			return env.Value
 		}
 	}
 	return ""

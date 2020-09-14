@@ -615,24 +615,14 @@ func (c *converter) addBackend(source *annotations.Source, hostname, uri, fullSv
 func (c *converter) syncBackendEndpointCookies(backend *hatypes.Backend) {
 	cookieAffinity := backend.CookieAffinity()
 	for _, ep := range backend.Endpoints {
-		c.logger.Info("checking cookies for backend %s/%s ep %s", backend.Namespace, backend.Name, ep.Name)
 		if cookieAffinity {
 			switch backend.EpCookieStrategy {
 			default:
-				c.logger.Info("setting cookie using default strategy for backend %s/%s ep %s. CookieValue = %s", backend.Namespace, backend.Name, ep.Name, ep.CookieValue)
 				ep.CookieValue = ep.Name
 			case hatypes.EpCookieEnv:
 				ep.CookieValue = ""
 				if ep.TargetRef != "" {
-					container := convutils.FindContainerAtPort(c.cache, ep.TargetRef, ep.Port)
-					c.logger.Info("finding container for backend %s/%s ep %s. ep.TargetRef = %s, ep.Port = %v", backend.Namespace, backend.Name, ep.Name, ep.TargetRef, ep.Port)
-					if container != nil {
-						c.logger.Info("container found for backend %s/%s ep %s. ep.TargetRef = %s, ep.Port = %v", backend.Namespace, backend.Name, ep.Name, ep.TargetRef, ep.Port)
-						envName := backend.EnvVarCookieName
-						envValue := convutils.FindEnvFromContainer(container, envName, c.logger)
-						c.logger.Info("setting cookie using envvar strategy for backend %s/%s ep %s. CookieValue = %s", backend.Namespace, backend.Name, ep.Name, ep.CookieValue)
-						ep.CookieValue = envValue
-					}
+					ep.CookieValue = convutils.FindEnvFromPod(c.cache, ep.TargetRef, backend.EnvVarCookieName)
 				}
 			}
 		} else {
