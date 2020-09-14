@@ -83,9 +83,14 @@ func FindEnvFromPod(cache types.Cache, podTargetRef string, name string, logger 
 	for i, container := range containers {
 		for _, env := range container.Env {
 			logger.Info("iterating env vars for container %v for pod %s ... name = %s, value = %s", i, podTargetRef, env.Name, env.Value)
-			if env.Name == name && env.Value != "" {
-				logger.Info("iterating env vars for container %v for pod %s ... name = %s, value = %s ... MATCHED", i, podTargetRef, env.Name, env.Value)
-				return env.Value
+			if env.Name == name {
+				if env.Value != "" {
+					logger.Info("iterating env vars for container %v for pod %s ... name = %s, value = %s ... MATCHED", i, podTargetRef, env.Name, env.Value)
+					return env.Value
+				} else if env.ValueFrom != nil {
+					logger.Warn("Found environment variable %s for pod %s, however it is a fieldRef/keyRef and the value couldn't be read. Use a direct value instead.", env.Name, podTargetRef)
+				}
+
 			}
 		}
 	}
