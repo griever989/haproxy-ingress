@@ -24,6 +24,7 @@ import (
 	api "k8s.io/api/core/v1"
 
 	"github.com/jcmoraisjr/haproxy-ingress/pkg/converters/types"
+	hatypes "github.com/jcmoraisjr/haproxy-ingress/pkg/types"
 )
 
 // FindServicePort ...
@@ -84,9 +85,12 @@ func FindContainerAtPort(cache types.Cache, podTargetRef string, port int) *api.
 }
 
 // FindEnvFromContainer finds the value of an environment variable with name `name` from the container
-func FindEnvFromContainer(container *api.Container, name string) string {
+func FindEnvFromContainer(container *api.Container, name string, logger hatypes.Logger) string {
+	logger.Info("FindEnvFromContainer: looking for env name = %s ...", name)
 	for _, env := range container.Env {
+		logger.Info("FindEnvFromContainer: looking for env name = %s ... enumerated name = %s, val = %s", name, env.Name, env.Value)
 		if env.Name == name {
+			logger.Info("FindEnvFromContainer: looking for env name = %s ... enumerated name = %s, val = %s ... FOUND", name, env.Name, env.Value)
 			return env.Value
 		}
 	}
