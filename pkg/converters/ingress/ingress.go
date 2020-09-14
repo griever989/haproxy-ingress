@@ -169,8 +169,7 @@ func (c *converter) syncFull() {
 		c.syncIngress(ing)
 	}
 	c.fullSyncAnnotations()
-	c.logger.Info("syncfull")
-	c.syncChangedEndpointCookies()
+	c.syncEndpointCookies()
 }
 
 func (c *converter) syncPartial() {
@@ -283,7 +282,6 @@ func (c *converter) syncPartial() {
 		c.syncIngress(ing)
 	}
 	c.partialSyncAnnotations()
-	c.logger.Info("syncpartial")
 	c.syncChangedEndpointCookies()
 }
 
@@ -440,22 +438,14 @@ func (c *converter) syncIngress(ing *networking.Ingress) {
 	}
 }
 
-func (c *converter) syncChangedEndpointCookies() {
-	// for _, ep := range c.changed.Endpoints {
-	// 	for _, backend := range c.haproxy.Backends().Items() {
-	// 		// make a t.backendByName lookup?
-	// 		if backend.Namespace == ep.Namespace && backend.Name == ep.Name {
-	// 			c.logger.Info("syncing cookies for backend %s/%s", backend.Namespace, backend.Name)
-	// 			c.syncBackendEndpointCookies(backend)
-	// 		}
-	// 	}
-	// }
+func (c *converter) syncEndpointCookies() {
 	for _, backend := range c.haproxy.Backends().Items() {
-		c.logger.Info("syncing cookies for backend (items) %s/%s", backend.Namespace, backend.Name)
 		c.syncBackendEndpointCookies(backend)
 	}
+}
+
+func (c *converter) syncChangedEndpointCookies() {
 	for _, backend := range c.haproxy.Backends().ItemsAdd() {
-		c.logger.Info("syncing cookies for backend (itemsadd) %s/%s", backend.Namespace, backend.Name)
 		c.syncBackendEndpointCookies(backend)
 	}
 }
@@ -629,17 +619,11 @@ func (c *converter) addBackend(source *annotations.Source, hostname, uri, fullSv
 		}
 	}
 
-	c.syncBackendEndpointCookies(backend)
-
 	return backend, nil
 }
 
 func (c *converter) syncBackendEndpointCookies(backend *hatypes.Backend) {
 	cookieAffinity := backend.CookieAffinity()
-	c.logger.Info("CookieAffinity = %v, backend = %s/%s", cookieAffinity, backend.Namespace, backend.Name)
-	c.logger.Info("EpCookieStrategy = %v, backend = %s/%s", backend.EpCookieStrategy, backend.Namespace, backend.Name)
-	c.logger.Info("EnvVarCookieName = %v, backend = %s/%s", backend.EnvVarCookieName, backend.Namespace, backend.Name)
-	c.logger.Info("Backend.Cookie.Name = %v, backend = %s/%s", backend.Cookie.Name, backend.Namespace, backend.Name)
 	for _, ep := range backend.Endpoints {
 		if cookieAffinity {
 			switch backend.EpCookieStrategy {
@@ -659,7 +643,6 @@ func (c *converter) syncBackendEndpointCookies(backend *hatypes.Backend) {
 		} else {
 			ep.CookieValue = ""
 		}
-		c.logger.Info("ep.CookieValue = %v, ep = %s", ep.CookieValue, ep.Name)
 	}
 }
 
