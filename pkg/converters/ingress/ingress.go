@@ -622,7 +622,7 @@ func (c *converter) syncBackendEndpointCookies(backend *hatypes.Backend) {
 			case hatypes.EpCookieEnv:
 				ep.CookieValue = ""
 				if ep.TargetRef != "" {
-					ep.CookieValue = convutils.FindEnvFromPod(c.cache, ep.TargetRef, backend.EnvVarCookieName)
+					ep.CookieValue = convutils.FindEnvFromPod(c.cache, ep.TargetRef, backend.EnvVarCookieName, c.logger)
 				}
 			}
 		} else {
