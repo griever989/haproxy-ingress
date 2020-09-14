@@ -619,7 +619,7 @@ func (c *converter) syncBackendEndpointCookies(backend *hatypes.Backend) {
 			switch backend.EpCookieStrategy {
 			default:
 				ep.CookieValue = ep.Name
-			case hatypes.EpCookieEnv:
+			case hatypes.EpPodUid:
 				ep.CookieValue = ""
 				if ep.TargetRef != "" {
 					ep.CookieValue = convutils.FindEnvFromPod(c.cache, ep.TargetRef, backend.EnvVarCookieName, c.logger)

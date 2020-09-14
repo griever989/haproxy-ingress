@@ -412,7 +412,7 @@ type EndpointCookieStrategy int
 // ...
 const (
 	EpCookieName EndpointCookieStrategy = iota
-	EpCookieEnv
+	EpPodUid
 )
 
 // Backends ...
@@ -447,7 +447,6 @@ type Backend struct {
 	Endpoints        []*Endpoint
 	EpNaming         EndpointNaming
 	EpCookieStrategy EndpointCookieStrategy
-	EnvVarCookieName string
 	Paths            []*BackendPath
 	PathsMap         *HostsMap
 	//
@@ -673,6 +672,7 @@ type UserlistConfig struct {
 type Cookie struct {
 	Name     string
 	Dynamic  bool
+	Preserve bool
 	Shared   bool
 	Strategy string
 	Keywords string

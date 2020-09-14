@@ -632,19 +632,34 @@ d1.local/ path01`,
     server s32 172.17.0.132:8080 weight 100
     server s33 172.17.0.133:8080 weight 100`,
 		},
-		// simulates a config where the cookie value is an env var from a pod
+		// simulates a config where the cookie value is a pod id
 		{
 			doconfig: func(g *hatypes.Global, h *hatypes.Host, b *hatypes.Backend) {
 				b.Cookie.Name = "serverId"
 				b.Cookie.Strategy = "insert"
-				b.Cookie.Keywords = "preserve nocache"
-				b.EpCookieStrategy = hatypes.EpCookieEnv
-				b.EnvVarCookieName = "SERVER_ID"
+				b.Cookie.Keywords = "nocache"
+				b.EpCookieStrategy = hatypes.EpPodUid
 				ep1 := *endpointS1
 				b.Endpoints = []*hatypes.Endpoint{&ep1}
-				b.Endpoints[0].CookieValue = "custom_val_1"
+				b.Endpoints[0].CookieValue = "9d344d6c-6069-4aee-85e6-9348e70c71e6"
 			},
-			srvsuffix: "cookie custom_val_1",
+			srvsuffix: "cookie 9d344d6c-6069-4aee-85e6-9348e70c71e6",
+			expected: `
+    cookie serverId insert nocache`,
+		},
+		// simulates a config where the cookie "preserve" option is used
+		{
+			doconfig: func(g *hatypes.Global, h *hatypes.Host, b *hatypes.Backend) {
+				b.Cookie.Name = "serverId"
+				b.Cookie.Strategy = "insert"
+				b.Cookie.Preserve = true
+				b.Cookie.Keywords = "nocache"
+				b.EpCookieStrategy = hatypes.EpPodUid
+				ep1 := *endpointS1
+				b.Endpoints = []*hatypes.Endpoint{&ep1}
+				b.Endpoints[0].CookieValue = "9d344d6c-6069-4aee-85e6-9348e70c71e6"
+			},
+			srvsuffix: "cookie 9d344d6c-6069-4aee-85e6-9348e70c71e6",
 			expected: `
     cookie serverId insert preserve nocache`,
 		},

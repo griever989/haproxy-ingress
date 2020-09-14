@@ -121,6 +121,31 @@ func TestAffinity(t *testing.T) {
 			expCookie:  hatypes.Cookie{Name: "INGRESSCOOKIE", Strategy: "prefix", Keywords: "nocache"},
 			expLogging: "",
 		},
+		// 10
+		{
+			ann: map[string]string{
+				ingtypes.BackAffinity:              "cookie",
+				ingtypes.BackSessionCookieName:     "serverId",
+				ingtypes.BackSessionCookieStrategy: "insert",
+				ingtypes.BackSessionCookieDynamic:  "false",
+				ingtypes.BackSessionCookieKeywords: "preserve nocache",
+			},
+			expCookie:  hatypes.Cookie{Name: "serverId", Strategy: "insert", Dynamic: false, Preserve: false, Keywords: "preserve nocache"},
+			expLogging: "WARN cookie keywords contains 'preserve'; consider using 'session-cookie-preserve' annotation instead for better dynamic update cookie persistence",
+		},
+		// 11
+		{
+			ann: map[string]string{
+				ingtypes.BackAffinity:              "cookie",
+				ingtypes.BackSessionCookieName:     "serverId",
+				ingtypes.BackSessionCookieStrategy: "insert",
+				ingtypes.BackSessionCookieDynamic:  "false",
+				ingtypes.BackSessionCookiePreserve: "true",
+				ingtypes.BackSessionCookieKeywords: "nocache",
+			},
+			expCookie:  hatypes.Cookie{Name: "serverId", Strategy: "insert", Dynamic: false, Preserve: true, Keywords: "nocache"},
+			expLogging: "",
+		},
 	}
 
 	source := &Source{

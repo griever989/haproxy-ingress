@@ -74,7 +74,7 @@ func FindEnvFromPod(cache types.Cache, podTargetRef string, name string, logger 
 	logger.Info("finding pod %s", podTargetRef)
 	pod, err := cache.GetPod(podTargetRef)
 	if err != nil {
-		logger.Info("finding pod %s ... failed", podTargetRef)
+		logger.Info("finding pod %s ... failed", podTargetRef) // switch to err and log in calling func
 		return ""
 	}
 	logger.Info("finding pod %s ... success", podTargetRef)
@@ -86,7 +86,9 @@ func FindEnvFromPod(cache types.Cache, podTargetRef string, name string, logger 
 			if env.Name == name {
 				if env.Value != "" {
 					logger.Info("iterating env vars for container %v for pod %s ... name = %s, value = %s ... MATCHED", i, podTargetRef, env.Name, env.Value)
-					return env.Value
+					return env.Value // todo try using execAction?
+					// client.CoreV1().RESTClient().Post().Resource("pods").Name(podName).Namespace("default").SubResource("exec")
+					// sanitize to make sure to use env.Name that already exists
 				} else if env.ValueFrom != nil {
 					logger.Warn("Found environment variable %s for pod %s, however it is a fieldRef/keyRef and the value couldn't be read. Use a direct value instead.", env.Name, podTargetRef)
 				}

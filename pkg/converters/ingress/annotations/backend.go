@@ -61,16 +61,19 @@ func (c *updater) buildBackendAffinity(d *backData) {
 	}
 	d.backend.Cookie.Keywords = keywords
 	d.backend.Cookie.Dynamic = d.mapper.Get(ingtypes.BackSessionCookieDynamic).Bool()
+	d.backend.Cookie.Preserve = d.mapper.Get(ingtypes.BackSessionCookiePreserve).Bool()
 	d.backend.Cookie.Shared = d.mapper.Get(ingtypes.BackSessionCookieShared).Bool()
+
+	if strings.Contains(d.backend.Cookie.Keywords, "preserve") {
+		c.logger.Warn("cookie keywords contains 'preserve'; consider using 'session-cookie-preserve' annotation instead for better dynamic update cookie persistence")
+	}
 
 	switch d.mapper.Get(ingtypes.BackSessionCookieValue).Value {
 	default:
 		d.backend.EpCookieStrategy = hatypes.EpCookieName
-	case "container-env":
-		d.backend.EpCookieStrategy = hatypes.EpCookieEnv
+	case "pod-uid":
+		d.backend.EpCookieStrategy = hatypes.EpPodUid
 	}
-
-	d.backend.EnvVarCookieName = d.mapper.Get(ingtypes.BackSessionCookieEnvName).Value
 }
 
 func (c *updater) buildBackendAuthHTTP(d *backData) {
