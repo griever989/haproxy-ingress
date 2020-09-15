@@ -185,6 +185,7 @@ The table below describes all supported configuration keys.
 | [`oauth-headers`](#oauth)                            | `<header>:<var>,...`                    | Backend |                    |
 | [`oauth-uri-prefix`](#oauth)                         | URI prefix                              | Backend |                    |
 | [`path-type`](#path-type)                            | path matching type                      | Host    | `begin`            |
+| [`path-type-order`](#path-type)                      | comma-separated path type list          | Global  | `exact,prefix,begin,regex` |
 | [`prometheus-port`](#bind-port)                      | port number                             | Global  |                    |
 | [`proxy-body-size`](#proxy-body-size)                | size (bytes)                            | Backend | unlimited          |
 | [`proxy-protocol`](#proxy-protocol)                  | [v1\|v2\|v2-ssl\|v2-ssl-cn]             | Backend |                    |
@@ -224,7 +225,7 @@ The table below describes all supported configuration keys.
 | [`stats-port`](#stats)                               | port number                             | Global  | `1936`             |
 | [`stats-proxy-protocol`](#stats)                     | [true\|false]                           | Global  | `false`            |
 | [`stats-ssl-cert`](#stats)                           | namespace/secret name                   | Global  | no ssl/plain http  |
-| [`strict-host`](#strict-host)                        | [true\|false]                           | Global  | `true`             |
+| [`strict-host`](#strict-host)                        | [true\|false]                           | Global  | `false`            |
 | [`syslog-endpoint`](#syslog)                         | IP:port (udp)                           | Global  | do not log         |
 | [`syslog-format`](#syslog)                           | rfc5424\|rfc3164                        | Global  | `rfc5424`          |
 | [`syslog-length`](#syslog)                           | maximum length                          | Global  | `1024`             |
@@ -1306,13 +1307,19 @@ See also:
 
 ## Path type
 
-| Configuration key | Scope  | Default | Since |
-|-------------------|--------|---------|-------|
-| `path-type`       | `Host` | `begin` | v0.11 |
+| Configuration key | Scope    | Default                    | Since |
+|-------------------|----------|----------------------------|-------|
+| `path-type`       | `Host`   | `begin`                    | v0.11 |
+| `path-type-order` | `Global` | `exact,prefix,begin,regex` | v0.12 |
 
 Defines how the path of an incoming request should match a declared path in the ingress object.
 
 * `path-type`: Configures the path type. Case insensitive, so `Begin` and `begin` configures the same path type option. The ingress spec has priority, this option will only be used if the `pathType` attribute from the ingress spec is declared as `ImplementationSpecific` or is not declared.
+* `path-type-order`: Defines a comma-separated list of priority path types. First types has higher precedence, which means that if two distinct paths of two distinct types overlaps, the first in the list will be used to handle the request. All path types must be provided. Case insensitive, use all path types in lowercase.
+
+{{% alert title="Warning" color="warning" %}}
+Wildcard hostnames and alias-regex match incoming requests using the regex path type, even if the path itself has a distinct one. Changing the precedence order of paths also changes the precedence order of hostnames. See also [server-alias-regex](#server-alias) and [strict host](#strict-host).
+{{% /alert %}}
 
 Supported `path-type` values:
 
@@ -1673,13 +1680,13 @@ Configurations of the HAProxy statistics page:
 
 | Configuration key | Scope     | Default | Since |
 |-------------------|-----------|---------|-------|
-| `strict-host`     | `Global`  | `true`  |       |
+| `strict-host`     | `Global`  | `false` |       |
 
 Defines whether the path of another matching host/FQDN should be used to try
-to serve a request. The default value is `true`, which means a strict
-configuration and the `default-backend` should be used if a path couldn't be
-matched. If `false`, all matching wildcard hosts will be visited in order to
-try to match the path.
+to serve a request. The default value is `false`, which means all matching
+wildcard hosts will be visited in order to try to match the path. If `true`,
+a strict configuration is applied and the `default-backend` should be used
+if a path couldn't be matched.
 
 Using the following configuration:
 
@@ -1704,8 +1711,8 @@ Using the following configuration:
 
 A request to `my.domain.com/b` would serve:
 
-* `default-backend` if `strict-host` is `true`, the default value
-* `svc2` if `strict-host` is `false`
+* `svc2` if `strict-host` is `false`, the default value
+* `default-backend` if `strict-host` is `true`
 
 ---
 
