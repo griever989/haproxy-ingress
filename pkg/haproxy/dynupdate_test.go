@@ -597,7 +597,7 @@ set server default_app_8080/srv002 weight 1`,
 				b2.Cookie.Keywords = "preserve nocache"
 				b2.Cookie.Dynamic = false
 				b2.Cookie.Preserve = true
-				b2.EpCookieStrategy = types.EpPodUid
+				b2.EpCookieStrategy = types.EpCookiePodUid
 				b2.ModeTCP = false
 				b2.AcquireEndpoint("172.17.0.2", 8080, "").CookieValue = "5017b276-6886-4ae0-b75e-bd1fcb9b1e3b"
 				b2.AcquireEndpoint("172.17.0.3", 8080, "").CookieValue = "3e4c9c86-0fc4-4aa9-9d96-bf0c49797006"
@@ -615,7 +615,7 @@ set server default_app_8080/srv002 weight 1`,
 				b2.Cookie.Keywords = "preserve nocache"
 				b2.Cookie.Dynamic = false
 				b2.Cookie.Preserve = true
-				b2.EpCookieStrategy = types.EpPodUid
+				b2.EpCookieStrategy = types.EpCookiePodUid
 				b2.ModeTCP = false
 				b2.AcquireEndpoint("172.17.0.2", 8080, "").CookieValue = "5017b276-6886-4ae0-b75e-bd1fcb9b1e3b"
 				// acquiring a different ip on srv002 should succeed dynamically
@@ -648,7 +648,7 @@ set server default_app_8080/srv002 weight 1
 				b2.Cookie.Keywords = "preserve nocache"
 				b2.Cookie.Dynamic = false
 				b2.Cookie.Preserve = true
-				b2.EpCookieStrategy = types.EpPodUid
+				b2.EpCookieStrategy = types.EpCookiePodUid
 				b2.ModeTCP = false
 				b2.AcquireEndpoint("172.17.0.2", 8080, "").CookieValue = "5017b276-6886-4ae0-b75e-bd1fcb9b1e3b"
 				b2.AcquireEndpoint("172.17.0.3", 8080, "").CookieValue = "3e4c9c86-0fc4-4aa9-9d96-bf0c49797006"
@@ -666,7 +666,7 @@ set server default_app_8080/srv002 weight 1
 				b2.Cookie.Keywords = "preserve nocache"
 				b2.Cookie.Dynamic = false
 				b2.Cookie.Preserve = true
-				b2.EpCookieStrategy = types.EpPodUid
+				b2.EpCookieStrategy = types.EpCookiePodUid
 				b2.ModeTCP = false
 				b2.AcquireEndpoint("172.17.0.2", 8080, "").CookieValue = "5017b276-6886-4ae0-b75e-bd1fcb9b1e3b"
 				// changing this cookie value should cause it to not be able to
@@ -696,7 +696,7 @@ set server default_app_8080/srv002 weight 1
 				b2.Cookie.Keywords = "preserve nocache"
 				b2.Cookie.Dynamic = false
 				b2.Cookie.Preserve = false
-				b2.EpCookieStrategy = types.EpPodUid
+				b2.EpCookieStrategy = types.EpCookiePodUid
 				b2.ModeTCP = false
 				b2.AcquireEndpoint("172.17.0.2", 8080, "").CookieValue = "5017b276-6886-4ae0-b75e-bd1fcb9b1e3b"
 				b2.AcquireEndpoint("172.17.0.3", 8080, "").CookieValue = "3e4c9c86-0fc4-4aa9-9d96-bf0c49797006"
@@ -714,7 +714,7 @@ set server default_app_8080/srv002 weight 1
 				b2.Cookie.Keywords = "preserve nocache"
 				b2.Cookie.Dynamic = false
 				b2.Cookie.Preserve = false
-				b2.EpCookieStrategy = types.EpPodUid
+				b2.EpCookieStrategy = types.EpCookiePodUid
 				b2.ModeTCP = false
 				b2.AcquireEndpoint("172.17.0.2", 8080, "").CookieValue = "5017b276-6886-4ae0-b75e-bd1fcb9b1e3b"
 				// we can still update even though the cookie changes below because

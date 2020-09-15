@@ -65,14 +65,21 @@ func (c *updater) buildBackendAffinity(d *backData) {
 	d.backend.Cookie.Shared = d.mapper.Get(ingtypes.BackSessionCookieShared).Bool()
 
 	if strings.Contains(d.backend.Cookie.Keywords, "preserve") {
-		c.logger.Warn("cookie keywords contains 'preserve'; consider using 'session-cookie-preserve' annotation instead for better dynamic update cookie persistence")
+		// just warn, no error, for keeping backwards compatibility where "preserve" may have been used in the "keywords" section
+		c.logger.Warn("session-cookie-keywords contains 'preserve'; consider using 'session-cookie-preserve' instead for better dynamic update cookie persistence")
 	}
 
-	switch d.mapper.Get(ingtypes.BackSessionCookieValue).Value {
-	default:
-		d.backend.EpCookieStrategy = hatypes.EpCookieName
+	cookieStrategy := d.mapper.Get(ingtypes.BackSessionCookieValue).Value
+	switch cookieStrategy {
 	case "pod-uid":
-		d.backend.EpCookieStrategy = hatypes.EpPodUid
+		d.backend.EpCookieStrategy = hatypes.EpCookiePodUid
+	case "server-name":
+		d.backend.EpCookieStrategy = hatypes.EpCookieName
+	default:
+		c.logger.Warn("invalid session-cookie-value-strategy '%s', using 'server-name' instead", cookieStrategy)
+		fallthrough
+	case "":
+		d.backend.EpCookieStrategy = hatypes.EpCookieName
 	}
 }
 
