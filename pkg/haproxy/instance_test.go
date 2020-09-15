@@ -54,9 +54,6 @@ func TestBackends(t *testing.T) {
 				b.Cookie.Name = "ingress-controller"
 				b.Cookie.Strategy = "insert"
 				b.Cookie.Keywords = "indirect nocache httponly"
-				ep := *endpointS1
-				b.Endpoints = []*hatypes.Endpoint{&ep}
-				b.Endpoints[0].CookieValue = "s1"
 			},
 			srvsuffix: "cookie s1",
 			expected: `
@@ -3153,67 +3150,76 @@ func (c *testConfig) configGlobal(global *hatypes.Global) {
 }
 
 var endpointS0 = &hatypes.Endpoint{
-	Name:    "s0",
-	IP:      "172.17.0.99",
-	Enabled: true,
-	Port:    8080,
-	Weight:  100,
+	Name:        "s0",
+	IP:          "172.17.0.99",
+	Enabled:     true,
+	Port:        8080,
+	Weight:      100,
+	CookieValue: "s0",
 }
 var endpointS1 = &hatypes.Endpoint{
-	Name:    "s1",
-	IP:      "172.17.0.11",
-	Enabled: true,
-	Port:    8080,
-	Weight:  100,
+	Name:        "s1",
+	IP:          "172.17.0.11",
+	Enabled:     true,
+	Port:        8080,
+	Weight:      100,
+	CookieValue: "s1",
 }
 var endpointS21 = &hatypes.Endpoint{
-	Name:    "s21",
-	IP:      "172.17.0.121",
-	Enabled: true,
-	Port:    8080,
-	Weight:  100,
+	Name:        "s21",
+	IP:          "172.17.0.121",
+	Enabled:     true,
+	Port:        8080,
+	Weight:      100,
+	CookieValue: "s21",
 }
 var endpointS22 = &hatypes.Endpoint{
-	Name:    "s22",
-	IP:      "172.17.0.122",
-	Enabled: true,
-	Port:    8080,
-	Weight:  100,
+	Name:        "s22",
+	IP:          "172.17.0.122",
+	Enabled:     true,
+	Port:        8080,
+	Weight:      100,
+	CookieValue: "s22",
 }
 var endpointS31 = &hatypes.Endpoint{
-	Name:    "s31",
-	IP:      "172.17.0.131",
-	Enabled: true,
-	Port:    8080,
-	Weight:  100,
+	Name:        "s31",
+	IP:          "172.17.0.131",
+	Enabled:     true,
+	Port:        8080,
+	Weight:      100,
+	CookieValue: "s31",
 }
 var endpointS32 = &hatypes.Endpoint{
-	Name:    "s32",
-	IP:      "172.17.0.132",
-	Enabled: true,
-	Port:    8080,
-	Weight:  100,
+	Name:        "s32",
+	IP:          "172.17.0.132",
+	Enabled:     true,
+	Port:        8080,
+	Weight:      100,
+	CookieValue: "s32",
 }
 var endpointS33 = &hatypes.Endpoint{
-	Name:    "s33",
-	IP:      "172.17.0.133",
-	Enabled: true,
-	Port:    8080,
-	Weight:  100,
+	Name:        "s33",
+	IP:          "172.17.0.133",
+	Enabled:     true,
+	Port:        8080,
+	Weight:      100,
+	CookieValue: "s33",
 }
 var endpointS41s = &hatypes.Endpoint{
-	Name:    "s41s",
-	IP:      "172.17.0.141",
-	Enabled: true,
-	Port:    8443,
-	Weight:  100,
+	Name:        "s41s",
+	IP:          "172.17.0.141",
+	Enabled:     true,
+	Port:        8443,
+	Weight:      100,
+	CookieValue: "s41s",
 }
 var endpointS41h = &hatypes.Endpoint{
-	Name:    "s41h",
-	IP:      "172.17.0.141",
-	Enabled: true,
-	Port:    8080,
-	Weight:  100,
+	Name:        "s41h",
+	IP:          "172.17.0.141",
+	Enabled:     true,
+	Port:        8080,
+	Weight:      100,
+	CookieValue: "s41h",
 }
 
 var defaultLogging = `

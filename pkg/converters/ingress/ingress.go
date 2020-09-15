@@ -596,7 +596,6 @@ func (c *converter) addBackend(source *annotations.Source, hostname, uri, fullSv
 		default:
 			backend.EpNaming = hatypes.EpSequence
 		}
-
 		if mapper.Get(ingtypes.BackServiceUpstream).Bool() {
 			if addr, err := convutils.CreateSvcEndpoint(svc, port); err == nil {
 				backend.AcquireEndpoint(addr.IP, addr.Port, addr.TargetRef)
