@@ -619,16 +619,15 @@ func (c *converter) syncBackendEndpointCookies(backend *hatypes.Backend) {
 			default:
 				ep.CookieValue = ep.Name
 			case hatypes.EpCookiePodUid:
-				ep.CookieValue = ""
 				if ep.TargetRef != "" {
 					pod, err := c.cache.GetPod(ep.TargetRef)
 					if err == nil {
 						ep.CookieValue = fmt.Sprintf("%v", pod.UID)
+					} else {
+						c.logger.Error("error calculating cookie value for pod %s: %v", ep.TargetRef, err)
 					}
 				}
 			}
-		} else {
-			ep.CookieValue = ""
 		}
 	}
 }
