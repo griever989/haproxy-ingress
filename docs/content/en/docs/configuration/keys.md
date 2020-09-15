@@ -348,10 +348,10 @@ See also:
 | `session-cookie-dynamic`        | `Backend` | `true`                      |       |
 | `session-cookie-keywords`       | `Backend` | `indirect nocache httponly` | v0.11 |
 | `session-cookie-name`           | `Backend` | `INGRESSCOOKIE`             |       |
-| `session-cookie-preserve`       | `Backend` | `false`                     | v0.11 |
+| `session-cookie-preserve`       | `Backend` | `false`                     | v0.12 |
 | `session-cookie-shared`         | `Backend` | `false`                     | v0.8  |
 | `session-cookie-strategy`       | `Backend` | `insert`                    |       |
-| `session-cookie-value-strategy` | `Backend` | `server-name`               | v0.11 |
+| `session-cookie-value-strategy` | `Backend` | `server-name`               | v0.12 |
 
 Configure if HAProxy should maintain client requests to the same backend server.
 
