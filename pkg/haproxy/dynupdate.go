@@ -211,8 +211,8 @@ func (d *dynUpdater) checkBackendPair(pair *backendPair) bool {
 		// reusing empty slots from oldBack
 		added[i].Name = empty[i].Name
 		if curBack.Cookie.Preserve && added[i].CookieValue != empty[i].CookieValue {
-			// if cookie doesn't match here, assume that preserving the value is
-			// important and don't even enable the endpoint before reloading
+			// if cookie doesn't match here and preserving the value is
+			// important, don't even enable the endpoint before reloading
 			updated = false
 		} else if !d.execEnableEndpoint(curBack.ID, nil, added[i]) || added[i].Label != "" {
 			updated = false
@@ -233,8 +233,8 @@ func (d *dynUpdater) checkEndpointPair(backend *hatypes.Backend, pair *epPair) b
 		return true
 	}
 	if backend.Cookie.Preserve && pair.old.CookieValue != pair.cur.CookieValue {
-		// if cookie doesn't match here, assume that preserving the value is
-		// important and don't even enable the endpoint before reloading
+		// if cookie doesn't match here and preserving the value is
+		// important, don't even enable the endpoint before reloading
 		return false
 	}
 	updated := d.execEnableEndpoint(backend.ID, pair.old, pair.cur)

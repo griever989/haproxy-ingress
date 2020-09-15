@@ -24,7 +24,6 @@ import (
 	api "k8s.io/api/core/v1"
 
 	"github.com/jcmoraisjr/haproxy-ingress/pkg/converters/types"
-	hatypes "github.com/jcmoraisjr/haproxy-ingress/pkg/types"
 )
 
 // FindServicePort ...
@@ -65,38 +64,6 @@ func FindContainerPort(pod *api.Pod, svcPort *api.ServicePort) int {
 		}
 	}
 	return 0
-}
-
-// FindEnvFromPod finds the value of an environment variable with name
-// `name` from the containers of a pod. If the pod has multiple containers, it
-// returns the first container that has a non-empty value for the env var.
-func FindEnvFromPod(cache types.Cache, podTargetRef string, name string, logger hatypes.Logger) string {
-	logger.Info("finding pod %s", podTargetRef)
-	pod, err := cache.GetPod(podTargetRef)
-	if err != nil {
-		logger.Info("finding pod %s ... failed", podTargetRef) // switch to err and log in calling func
-		return ""
-	}
-	logger.Info("finding pod %s ... success", podTargetRef)
-	logger.Info("iterating containers for pod %s ...", podTargetRef)
-	containers := pod.Spec.Containers
-	for i, container := range containers {
-		for _, env := range container.Env {
-			logger.Info("iterating env vars for container %v for pod %s ... name = %s, value = %s", i, podTargetRef, env.Name, env.Value)
-			if env.Name == name {
-				if env.Value != "" {
-					logger.Info("iterating env vars for container %v for pod %s ... name = %s, value = %s ... MATCHED", i, podTargetRef, env.Name, env.Value)
-					return env.Value // todo try using execAction?
-					// client.CoreV1().RESTClient().Post().Resource("pods").Name(podName).Namespace("default").SubResource("exec")
-					// sanitize to make sure to use env.Name that already exists
-				} else if env.ValueFrom != nil {
-					logger.Warn("Found environment variable %s for pod %s, however it is a fieldRef/keyRef and the value couldn't be read. Use a direct value instead.", env.Name, podTargetRef)
-				}
-
-			}
-		}
-	}
-	return ""
 }
 
 // Endpoint ...
